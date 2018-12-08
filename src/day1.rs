@@ -15,7 +15,7 @@ fn part_2(input: &str) -> i32 {
     frequencies.insert(0);
 
     let mut current_freq = 0;
-    for num in num_iter {
+    for num in num_iter.cycle() {
         current_freq += num;
         if frequencies.contains(&current_freq) {
             return current_freq;
