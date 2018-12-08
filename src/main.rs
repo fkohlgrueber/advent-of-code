@@ -7,6 +7,7 @@ mod day2;
 mod day3;
 mod day4;
 mod day5;
+mod day6;
 mod day8;
 
 pub fn read_input(day_number: i32) -> std::io::Result<String> {
@@ -29,6 +30,7 @@ fn main() {
         3 => println!("{:?}", day3::calc(&read_input(3).unwrap())),
         4 => println!("{:?}", day4::calc(&read_input(4).unwrap())),
         5 => println!("{:?}", day5::calc(&read_input(5).unwrap())),
+        6 => println!("{:?}", day6::calc(&read_input(6).unwrap())),
         8 => println!("{:?}", day8::calc(&read_input(8).unwrap())),
         1..=24 => println!("This day is not implemented yet."),
         _ => println!("Day has to between 1 and 24."),
