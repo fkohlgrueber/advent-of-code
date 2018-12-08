@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-pub fn calc(input: &str) -> (i32, String) {
-    (part_1(input), part_2(input))
+pub fn calc(input: &str) -> (String, String) {
+    (part_1(input).to_string(), part_2(input))
 }
 
 fn part_1(input: &str) -> i32 {

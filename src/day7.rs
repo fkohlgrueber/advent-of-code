@@ -1,8 +1,8 @@
 use regex::Regex;
 use std::collections::HashMap;
 
-pub fn calc(input: &str) -> (String, i32) {
-    (part_1(input), part_2(input, 5, 60))
+pub fn calc(input: &str) -> (String, String) {
+    (part_1(input), part_2(input, 5, 60).to_string())
 }
 
 fn part_1(input: &str) -> String {

@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-pub fn calc(input: &str) -> (i32, i32) {
-    (part_1(input), part_2(input, 10000))
+pub fn calc(input: &str) -> (String, String) {
+    (part_1(input).to_string(), part_2(input, 10000).to_string())
 }
 
 fn part_1(input: &str) -> i32 {
