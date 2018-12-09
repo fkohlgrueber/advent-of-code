@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::prelude::*;
+use std::time::Instant;
 use structopt::StructOpt;
 
 mod day1;
@@ -45,12 +46,15 @@ type CalcFunction = for<'r> fn(&'r str) -> (String, String);
 fn execute_func(day_number: i32) {
     match get_func(day_number) {
         Ok(func) => {
+            let now = Instant::now();
             let (part1, part2) = func(&read_input(day_number).unwrap());
+            let elapsed = now.elapsed();
             println!(
-                "Results for day {}:\n  Part 1: {}\n  Part 2: {}",
+                "Results for day {}:\n  Part 1: {}\n  Part 2: {}\n  (calculated in {} seconds)",
                 day_number,
                 part1,
                 part2,
+                elapsed.as_secs() as f32 + elapsed.subsec_millis() as f32 / 1000.,
             )
         },
         Err(s) => println!("{}", s),

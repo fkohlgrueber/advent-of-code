@@ -121,9 +121,4 @@ mod tests {
         assert_eq!(part_1("21 players; last marble is worth 6111 points"), 54718);
         assert_eq!(part_1("30 players; last marble is worth 5807 points"), 37305);
     }
-
-    #[test]
-    fn test_part_2() {
-        assert_eq!(part_2(""), 0);
-    }
 }
