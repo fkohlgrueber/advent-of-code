@@ -1,5 +1,6 @@
 use regex::Regex;
 use std::cmp::{max, min};
+use lazy_static::lazy_static;
 
 pub fn calc(input: &str) -> (String, String) {
     (part_1(input).to_string(), part_2(input).to_string())
@@ -124,9 +125,11 @@ struct Patch {
 
 impl Patch {
     fn from_str(s: &str) -> Option<Patch> {
-        let re = Regex::new(r"^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$").unwrap();
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$").unwrap();
+        }
 
-        if let Some(cap) = re.captures(s) {
+        if let Some(cap) = RE.captures(s) {
             Some(Patch {
                 id: cap[1].parse().unwrap(),
                 left: cap[2].parse().unwrap(),
