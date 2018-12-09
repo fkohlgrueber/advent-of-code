@@ -39,6 +39,7 @@ pub fn read_input(day_number: i32) -> std::io::Result<String> {
 #[derive(StructOpt)]
 struct Cli {
     day: i32,
+    bench: bool,
 }
 
 type CalcFunction = for<'r> fn(&'r str) -> (String, String);
@@ -46,8 +47,9 @@ type CalcFunction = for<'r> fn(&'r str) -> (String, String);
 fn execute_func(day_number: i32) {
     match get_func(day_number) {
         Ok(func) => {
+            let input = read_input(day_number).unwrap();
             let now = Instant::now();
-            let (part1, part2) = func(&read_input(day_number).unwrap());
+            let (part1, part2) = func(&input);
             let elapsed = now.elapsed();
             println!(
                 "Results for day {}:\n  Part 1: {}\n  Part 2: {}\n  (calculated in {} seconds)",
@@ -61,14 +63,38 @@ fn execute_func(day_number: i32) {
     }
 }
 
+fn bench_func(day_number: i32){
+    if let Ok(func) = get_func(day_number) {
+        let num_iterations = 10;
+        let input = read_input(day_number).unwrap();
+        let mut res : Vec<(String, String)> = Vec::new();
+        res.reserve(num_iterations);
+        let now = Instant::now();
+        for _ in 0..num_iterations {
+            res.push(func(&input));
+        }
+        let elapsed = now.elapsed();
+        for i in 1..res.len() {
+            if res[i] != res[0] {panic!("error!")};
+        }
+        println!(
+            "Day {:2}: {:.3} s per iteration",
+            day_number,
+            (elapsed.as_secs() as f32 + elapsed.subsec_millis() as f32 / 1000.) / num_iterations as f32,
+        )
+    }
+}
+
 fn main() {
     let args = Cli::from_args();
     
+    let func = if args.bench { bench_func} else {execute_func};
+
     if args.day == 25 {
         for i in 1..=24 {
-            execute_func(i);
+            func(i);
         }
     } else {
-        execute_func(args.day);
+        func(args.day);
     }
 }
