@@ -5,21 +5,27 @@ pub fn calc(input: &str) -> (String, String) {
 }
 
 fn part_1(input: &str) -> i32 {
-    let mut contents : Vec<char> = input.chars().collect();
+    let contents : Vec<char> = input.chars().collect();
+
+    let mut stack = Vec::new();
+    stack.reserve(contents.len());
 
     let mut i = 0;
-    while i < contents.len()-1 {
-        
-        if same_char(contents[i], contents[i+1]){
-            contents.remove(i);
-            contents.remove(i);
-            i = match i {0 => 0, x => x-1};
-        }else {
-            i += 1;
+    let mut j = 1;
+    while i < contents.len() {
+        if j < contents.len() && same_char(contents[i], contents[j]) {
+            match stack.pop() {
+                None => {i = j+1; j += 2;},
+                Some(x) => {i = x; j += 1;},
+            }
+        } else {
+            stack.push(i);
+            i = j;
+            j += 1;
         }
     }
 
-    contents.len() as i32
+    stack.len() as i32
 }
 
 fn part_2(input: &str) -> i32 {
@@ -66,6 +72,8 @@ mod tests {
     #[test]
     fn test_part_1() {
         assert_eq!(part_1("dabAcCaCBAcCcaDA"), 10);
+        assert_eq!(part_1("abBAcdDe"), 2);
+        assert_eq!(part_1("abBAcCdDe"), 1);
     }
 
     #[test]
