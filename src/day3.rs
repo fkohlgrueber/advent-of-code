@@ -1,5 +1,5 @@
 use regex::Regex;
-use std::collections::HashMap;
+use std::cmp::{max, min};
 
 pub fn calc(input: &str) -> (String, String) {
     (part_1(input).to_string(), part_2(input).to_string())
@@ -7,18 +7,18 @@ pub fn calc(input: &str) -> (String, String) {
 
 fn part_1(input: &str) -> i32 {
     let patches: Vec<Patch> = input.lines().filter_map(|l| Patch::from_str(l)).collect();
-    let hash_map = gen_cell_hashmap(&patches);
-
-    hash_map.values().filter(|x| **x > 1).count() as i32
+    let grid = gen_grid(&patches);
+    
+    grid.values.iter().filter(|x| **x > 1).count() as i32
 }
 
 fn part_2(input: &str) -> i32 {
     let patches: Vec<Patch> = input.lines().filter_map(|l| Patch::from_str(l)).collect();
-    let hash_map = gen_cell_hashmap(&patches);
+    let grid = gen_grid(&patches);
 
     // check patches
     for p in patches {
-        if check_patch(&p, &hash_map) {
+        if grid.check_patch(&p) {
             return p.id as i32;
         }
     }
@@ -26,41 +26,100 @@ fn part_2(input: &str) -> i32 {
     panic!("No non-overlapping patch found")
 }
 
-fn check_patch(p: &Patch, hash_map: &HashMap<(u32, u32), i32>) -> bool {
-    for i in p.left..p.width + p.left {
-        for j in p.top..p.top + p.heigth {
-            let key = (i, j);
-            let entry = hash_map.get(&key).unwrap();
-            if *entry > 1 {
-                return false;
-            }
-        }
-    }
-    true
+struct BoundingBox{
+    top: usize,
+    left: usize,
+    bottom: usize,
+    right: usize,
 }
 
-fn gen_cell_hashmap(patches: &[Patch]) -> HashMap<(u32, u32), i32> {
-    let mut hash_map = HashMap::new();
+impl BoundingBox {
+    fn new() -> BoundingBox {
+        BoundingBox {
+            top: std::usize::MAX,
+            left: std::usize::MAX,
+            bottom: std::usize::MIN,
+            right: std::usize::MIN,
+        }
+    }
 
-    for p in patches {
-        for i in p.left..p.width + p.left {
-            for j in p.top..p.top + p.heigth {
-                let key = (i, j);
-                *hash_map.entry(key).or_insert(0) += 1;
+    fn update(&mut self, p : &Patch){
+        self.top = min(self.top, p.top as usize);
+        self.left = min(self.left, p.left as usize);
+        self.right = max(self.right, (p.left + p.width - 1) as usize);
+        self.bottom = max(self.bottom, (p.top + p.heigth - 1) as usize);
+    }
+
+    fn width(&self) -> usize{
+        self.right - self.left + 1
+    }
+    
+    fn heigth(&self) -> usize{
+        self.bottom - self.top + 1
+    }
+}
+
+struct Grid {
+    values: Vec<i32>,
+    bb: BoundingBox,
+    width: usize,
+}
+
+impl Grid {
+    fn new(bb: BoundingBox) -> Grid{
+        Grid{
+            values : vec![0; bb.width() * bb. heigth()],
+            width: bb.width(),
+            bb,
+        }
+    }
+
+    fn insert_patch(&mut self, p: &Patch){
+        for y in p.top..p.top + p.heigth {
+            for x in p.left..p.left + p.width{
+                let idx = self.idx(x, y);
+                self.values[idx] += 1;
             }
         }
     }
 
-    hash_map
+    fn check_patch(&self, p: &Patch) -> bool {
+        for y in p.top..p.top + p.heigth {
+            for x in p.left..p.left + p.width{
+                if self.values[self.idx(x, y)] > 1 {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+
+    fn idx(&self, x: usize, y: usize) -> usize{
+        let col = x - self.bb.left;
+        let row = y - self.bb.top;
+        row*self.width + col
+    }
+}
+
+fn gen_grid(patches: &[Patch]) -> Grid {
+    let mut bb = BoundingBox::new();
+    for p in patches{
+        bb.update(p);
+    }
+    let mut grid = Grid::new(bb);
+    for p in patches {
+        grid.insert_patch(p);
+    }
+    grid
 }
 
 #[derive(Debug)]
 struct Patch {
-    id: u32,
-    left: u32,
-    top: u32,
-    width: u32,
-    heigth: u32,
+    id: usize,
+    left: usize,
+    top: usize,
+    width: usize,
+    heigth: usize,
 }
 
 impl Patch {
