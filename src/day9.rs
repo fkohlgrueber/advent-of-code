@@ -113,6 +113,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[allow(clippy::unreadable_literal)]
     fn test_part_1() {
         assert_eq!(part_1("9 players; last marble is worth 25 points"), 32);
         assert_eq!(part_1("10 players; last marble is worth 1618 points"), 8317);
