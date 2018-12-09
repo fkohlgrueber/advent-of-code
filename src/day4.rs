@@ -4,6 +4,7 @@ extern crate chrono;
 use regex::Regex;
 use std::collections::HashMap;
 use chrono::prelude::*;
+use lazy_static::lazy_static;
 
 
 pub fn calc(input: &str) -> (String, String) {
@@ -83,16 +84,18 @@ struct Event {
 
 impl Event {
     fn from_str(s: &str) -> Event{
-        let re = Regex::new(r"\[(.+)\] (.+)").unwrap();
-        let cap = re.captures(s).unwrap();
+        lazy_static! {
+            static ref RE : Regex = Regex::new(r"\[(.+)\] (.+)").unwrap();
+            static ref RE2 : Regex = Regex::new(r"\d+").unwrap();
+        }
+        let cap = RE.captures(s).unwrap();
         Event{
             date_time:Utc.datetime_from_str(&cap[1], "%Y-%m-%d %H:%M").unwrap(),
             evt_type: match &cap[2]{
                 "falls asleep" => EventType::FallsAsleep,
                 "wakes up" => EventType::WakesUp,
                 s => {
-                    let reg = Regex::new(r"\d+").unwrap();
-                    let match_ = reg.find(s).unwrap();
+                    let match_ = RE2.find(s).unwrap();
                     EventType::BeginsShift(match_.as_str().parse().unwrap())
                 }
             },
