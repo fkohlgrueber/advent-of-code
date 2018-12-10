@@ -33,7 +33,7 @@ fn calc_smallest_bb(points: &[Point]) -> (i32, BoundingBox) {
         let mut bb = BoundingBox::new();
 
         for p in points {
-            bb.update(&p.get(i));
+            bb.update(p.get(i));
         }
 
         if let Some(bb_old) = maybe_bb_old {
@@ -59,12 +59,12 @@ impl Coord {
         Coord { x, y }
     }
 
-    fn min_inplace(&mut self, other: &Coord){
+    fn min_inplace(&mut self, other: Coord){
         self.x = std::cmp::min(self.x, other.x);
         self.y = std::cmp::min(self.y, other.y);
     }
 
-    fn max_inplace(&mut self, other: &Coord){
+    fn max_inplace(&mut self, other: Coord){
         self.x = std::cmp::max(self.x, other.x);
         self.y = std::cmp::max(self.y, other.y);
     }
@@ -110,7 +110,7 @@ impl BoundingBox {
         }
     }
 
-    fn update(&mut self, p: &Coord) {
+    fn update(&mut self, p: Coord) {
         self.min.min_inplace(p);
         self.max.max_inplace(p);
     }
