@@ -1,3 +1,4 @@
+use std::cmp::max;
 
 const SIZE : usize = 300;
 
@@ -11,12 +12,12 @@ fn part_1(input: &str) -> String {
     // get best 3x3 patch
     let mut max_val = std::i32::MIN;
     let mut coords = (0, 0);
-    for y in 1..=SIZE-2 {
-        for x in 1..SIZE-2 {
-            let sum = calc_patch_sum(x, y, 3, &grid);
+    for y in 0..SIZE-2 {
+        for x in 0..SIZE-2 {
+            let sum = calc_patch_sum(x, y, &grid);
             if sum > max_val {
                 max_val = sum;
-                coords = (x, y);
+                coords = (x+1, y+1);
             }
         }
     }
@@ -30,15 +31,10 @@ fn part_2(input: &str) -> String {
     // get best NxN patch
     let mut max_val = std::i32::MIN;
     let mut coords = (0, 0, 0);
-    for n in 1..=300 {
-        for y in 1..=SIZE-n+1 {
-            for x in 1..=SIZE-n+1 {
-                let sum = calc_patch_sum(x, y, n, &grid);
-                if sum > max_val {
-                    max_val = sum;
-                    coords = (x, y, n);
-                }
-            }
+    
+    for y in 0..SIZE {
+        for x in 0..SIZE {
+            calc_n_patch_sum(x, y, &mut max_val, &mut coords, &grid);
         }
     }
 
@@ -67,13 +63,32 @@ fn calc_power_level(x: usize, y: usize, grid_serial_number: usize) -> i32 {
     hundrets as i32 - 5
 }
 
-fn calc_patch_sum(x: usize, y: usize, n: usize, grid: &[[i32; SIZE]; SIZE]) -> i32 {
-    // x and y are 1-indexed
+fn calc_patch_sum(x: usize, y: usize, grid: &[[i32; SIZE]; SIZE]) -> i32 {
+    // x and y are 0-indexed
     let mut sum : i32 = 0;
-    for line in grid.iter().skip(y-1).take(n) {
-        sum += line.iter().skip(x-1).take(n).sum::<i32>();
+    for line in grid.iter().skip(y).take(3) {
+        sum += line.iter().skip(x).take(3).sum::<i32>();
     }
     sum
+}
+
+fn calc_n_patch_sum(x: usize, y: usize, max_val: &mut i32, coords: &mut (usize, usize, usize), grid: &[[i32; SIZE]; SIZE]) {
+    let mut val = grid[y][x];
+    let max_n = 300 - max(x, y);
+    for n in 2..=max_n {
+        // new sides
+        for i in 0..n-1 {
+            val += grid[y + i][x + n-1];
+            val += grid[y + n-1][x + i];
+        }
+        // lower-right corner
+        val += grid[y + n-1][x + n-1];
+        
+        if val > *max_val {
+            *max_val = val;
+            *coords = (x+1, y+1, n);
+        }
+    }
 }
 
 #[cfg(test)]
