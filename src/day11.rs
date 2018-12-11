@@ -27,17 +27,11 @@ fn part_1(input: &str) -> String {
 
 fn part_2(input: &str) -> String {
     let grid = gen_grid(input);
-
-    // get best NxN patch
-    let mut max_val = std::i32::MIN;
-    let mut coords = (0, 0, 0);
     
-    for y in 0..SIZE {
-        for x in 0..SIZE {
-            calc_n_patch_sum(x, y, &mut max_val, &mut coords, &grid);
-        }
-    }
-
+    let indices = (0..SIZE).flat_map(|x| (0..SIZE).map(move |y| (x, y)));
+    let patch_sums = indices.map(|(y, x)| calc_n_patch_sum(x, y, &grid));
+    let coords = patch_sums.max_by_key(|x| x.0).unwrap().1;
+    
     format!("{},{},{}", coords.0, coords.1, coords.2)
 }
 
@@ -72,7 +66,9 @@ fn calc_patch_sum(x: usize, y: usize, grid: &[[i32; SIZE]; SIZE]) -> i32 {
     sum
 }
 
-fn calc_n_patch_sum(x: usize, y: usize, max_val: &mut i32, coords: &mut (usize, usize, usize), grid: &[[i32; SIZE]; SIZE]) {
+fn calc_n_patch_sum(x: usize, y: usize, grid: &[[i32; SIZE]; SIZE]) -> (i32, (usize, usize, usize)){
+    let mut max_val = std::i32::MIN;
+    let mut coords = (0, 0, 0);
     let mut val = grid[y][x];
     let max_n = 300 - max(x, y);
     for n in 2..=max_n {
@@ -84,11 +80,12 @@ fn calc_n_patch_sum(x: usize, y: usize, max_val: &mut i32, coords: &mut (usize, 
         // lower-right corner
         val += grid[y + n-1][x + n-1];
         
-        if val > *max_val {
-            *max_val = val;
-            *coords = (x+1, y+1, n);
+        if val > max_val {
+            max_val = val;
+            coords = (x+1, y+1, n);
         }
     }
+    (max_val, coords)
 }
 
 #[cfg(test)]
@@ -111,7 +108,7 @@ mod tests {
 
     #[test]
     fn test_part_2() {
-        assert_eq!(part_2("18"), "90,251,12");
+        assert_eq!(part_2("18"), "90,269,16");
         assert_eq!(part_2("42"), "232,251,12");
     }
 }
