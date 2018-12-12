@@ -41,7 +41,7 @@ fn part_2(input: &str) -> i32 {
 fn calc_sleep_hist_per_guard(input : &str) -> HashMap<i32, [i32; 60]> {
     
     let mut events: Vec<Event> = input.lines().map(|x| Event::from_str(&x)).collect();
-    events.sort_by(|a, b| a.date_time.cmp(&b.date_time));
+    events.sort_by_key(|x| x.date_time);
 
     let mut hash_map : HashMap<i32, [i32; 60]> = HashMap::new();
     let mut id = 0;
