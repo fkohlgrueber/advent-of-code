@@ -1,5 +1,6 @@
 use std::cmp::max;
 use rayon::prelude::*;
+use itertools::iproduct;
 
 const SIZE : usize = 300;
 
@@ -29,7 +30,7 @@ fn part_1(input: &str) -> String {
 fn part_2(input: &str) -> String {
     let grid = gen_grid(input);
     
-    let indices = (0..SIZE).into_par_iter().flat_map(|x| (0..SIZE).into_par_iter().map(move |y| (x, y)));
+    let indices = iproduct!(0..SIZE, 0..SIZE).par_bridge();
     let patch_sums = indices.map(|(y, x)| calc_n_patch_sum(x, y, &grid));
     let coords = patch_sums.max_by_key(|x| x.0).unwrap().1;
     
