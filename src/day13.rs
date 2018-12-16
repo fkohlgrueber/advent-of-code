@@ -57,7 +57,7 @@ fn part_2(input: &str) -> String {
             
             // check that no other cart is at new position
             let mut id_collision = None;
-            for id2 in 0..carts.len() {
+            for (id2, _) in carts.iter().enumerate() {
                 if carts[id2].pos == new_pos {
                     // collision
                     id_collision = Some(id2);

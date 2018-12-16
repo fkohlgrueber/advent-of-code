@@ -6,7 +6,7 @@ pub fn calc(input: &str) -> (String, String) {
 }
 
 fn part_1(input: &str) -> usize {
-    let mut g = Game::new(input);
+    let mut g = Game::new(input, 3);
 
     for i in 0.. {
         let units = g.get_units_in_order();
@@ -31,16 +31,52 @@ fn part_1(input: &str) -> usize {
             //println!("\n...:");
             //g.print();
         }
-        if i == 104 {
-            println!("bp");
-        }
-        println!("\n\nAfter Round {}:", i+1);
-        g.print();
+        //println!("\n\nAfter Round {}:", i+1);
+        //g.print();
     }
     0
 }
 
-fn part_2(input: &str) -> i32 {
+fn part_2(input: &str) -> usize {
+    for power in 4.. {
+        println!("Simulating power {}", power);
+        let mut g = Game::new(input, power);
+
+        for i in 0.. {
+            let units = g.get_units_in_order();
+            let mut elf_died = false;
+            let mut new_positions = vec!();
+            for (y, x) in units {
+                if new_positions.contains(&(y, x)) {continue; }
+                // check for end of combat
+                let tmp_units = g.get_units_in_order();
+                let u2 = tmp_units.iter().map(|(y, x)| if let Cell::Goblin(_) = g.field[*y][*x] {true} else {false}).collect::<Vec<_>>();
+                if u2.iter().all(|x| *x) || !u2.iter().any(|x| *x) {
+                    println!("{}", i);
+                    return i * tmp_units.iter().map(|(y, x)| match &g.field[*y][*x] {
+                        Cell::Goblin(n) | Cell::Elf(n) => n.hit_points,
+                        _ => panic!("Should never happen")}).sum::<usize>();
+                }
+                let new_pos = g.move_unit(y, x);
+                if let Some((y, x)) = new_pos {
+                    new_positions.push((y, x));
+                    if g.attack(y, x) {
+                        println!("Elf died (power={})!", power);
+                        elf_died = true;
+                        break;
+                    }
+                }
+                //println!("\n...:");
+                //g.print();
+            }
+
+            if elf_died {
+                break;
+            }
+            //println!("\n\nAfter Round {}:", i+1);
+            //g.print();
+        }
+    }
     0
 }
 
@@ -79,10 +115,11 @@ enum Cell {
 
 struct Game {
     field: Vec<Vec<Cell>>,
+    elf_power: usize,
 }
 
 impl Game {
-    fn new(input: &str) -> Game {
+    fn new(input: &str, elf_power: usize) -> Game {
         let field: Vec<Vec<Cell>> = input.lines().map(|x| x.chars().map(|c| {
             match c {
                 'G' => Cell::Goblin(Unit::new()),
@@ -94,7 +131,8 @@ impl Game {
         }
         ).collect::<Vec<Cell>>()).collect();
         Game {
-            field
+            field,
+            elf_power
         }
     }
 
@@ -167,8 +205,14 @@ impl Game {
         }
     }
 
-    fn attack(&mut self, y: usize, x: usize) {
+    fn attack(&mut self, y: usize, x: usize) -> bool {
         let neighbors = [(y-1, x), (y, x-1), (y, x+1), (y+1, x)];
+
+        let power = match &self.field[y][x] {
+            Cell::Goblin(_) => 3,
+            Cell::Elf(_) => self.elf_power,
+            _ => panic!("AAAAAAAAAAAA!"),
+        };
 
         let mut lowest_hitpoints = 1000;
         let mut target = None;
@@ -183,15 +227,20 @@ impl Game {
             }
         }
         if let Some((ty, tx)) = target {
-            if lowest_hitpoints <= 3 {
+            if lowest_hitpoints <= power {
+                if let Cell::Elf(_) = &self.field[ty][tx] {
+                    self.field[ty][tx] = Cell::Free;
+                    return true;
+                }
                 self.field[ty][tx] = Cell::Free;
             } else {
                 match &mut self.field[ty][tx] {
-                    Cell::Goblin(n) | Cell::Elf(n) => n.hit_points -= 3,
+                    Cell::Goblin(n) | Cell::Elf(n) => n.hit_points -= power,
                     _ => ()
                 }
             }
         }
+        false
     }
 
     fn print(&self) {
@@ -220,24 +269,24 @@ mod tests {
 
     #[test]
     fn test_get_units_in_order() {
-        let g = Game::new("####\n#.E#\n#GG#\n#E.#\n####");
+        let g = Game::new("####\n#.E#\n#GG#\n#E.#\n####", 3);
         assert_eq!(g.get_units_in_order(), vec!((1, 2), (2, 1), (2, 2), (3, 1)));
     }
 
     #[test]
     fn test_bfs() {
-        let g = Game::new("#######\n#E..G.#\n#...#.#\n#.G.#G#\n#######");
+        let g = Game::new("#######\n#E..G.#\n#...#.#\n#.G.#G#\n#######", 3);
         assert_eq!(g.bfs(1, 1), Some((1, 2)));
-        let g = Game::new("#######\n#.E...#\n#.....#\n#...G.#\n#######");
+        let g = Game::new("#######\n#.E...#\n#.....#\n#...G.#\n#######", 3);
         assert_eq!(g.bfs(1, 2), Some((1, 3)));
-        let g = Game::new("#######\n#.E...#\n#.G...#\n#...G.#\n#######");
+        let g = Game::new("#######\n#.E...#\n#.G...#\n#...G.#\n#######", 3);
         assert_eq!(g.bfs(1, 2), None);
 
         let g = Game::new("#######\n\
                            #.E..G#\n\
                            #.#####\n\
                            #G#####\n\
-                           #######");
+                           #######", 3);
         assert_eq!(g.bfs(1, 2), Some((1, 3)));
     }
 
@@ -257,7 +306,7 @@ mod tests {
                     #.E##\n\
                     #####"), 200*67);   
         */
-        /*
+        
         assert_eq!(
             part_1("#######\n\
                     #.G...#\n\
@@ -322,11 +371,18 @@ mod tests {
                     #########"), 
             18740
         );
-        */
+        
     }
 
     #[test]
     fn test_part_2() {
-        assert_eq!(part_2(""), 0);
+        assert_eq!(
+            part_2("#######\n\
+                    #.G...#\n\
+                    #...EG#\n\
+                    #.#.#G#\n\
+                    #..G#E#\n\
+                    #.....#\n\
+                    #######"), 4988);
     }
 }
