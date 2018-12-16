@@ -17,6 +17,7 @@ mod day11;
 mod day12;
 mod day13;
 mod day14;
+mod day15;
 
 fn get_func(day_number: i32) -> Result<CalcFunction, String> {
     match day_number {
@@ -34,6 +35,7 @@ fn get_func(day_number: i32) -> Result<CalcFunction, String> {
         12 => Ok(day12::calc),
         13 => Ok(day13::calc),
         14 => Ok(day14::calc),
+        15 => Ok(day15::calc),
         n @ 1..=24 => Err(format!("Day {} is not implemented yet.", n)),
         _ => Err("Day has to between 1 and 24.".to_owned()),
     }
