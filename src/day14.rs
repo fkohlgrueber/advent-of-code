@@ -1,4 +1,6 @@
-
+fn check(scores: &[u8], vals: &[u8]) -> bool {
+    scores.len() >= vals.len() && vals.iter().zip(scores.iter().skip(scores.len() - vals.len()).take(vals.len())).all(|(a, b)| a == b)
+}
 
 pub fn calc(input: &str) -> (String, String) {
     let val: usize = input.parse().unwrap();
@@ -16,26 +18,17 @@ pub fn calc(input: &str) -> (String, String) {
         let new_num = scores[idx1] + scores[idx2];
         if new_num >= 10 {
             scores.push(1);
-            if scores.len() >= vals.len() && vals.iter().zip(scores.iter().skip(scores.len() - vals.len()).take(vals.len())).all(|(a, b)| a == b) {
-                if res_part_2 == 0 {
+            if check(&scores, &vals) && res_part_2 == 0 {
                     res_part_2 = scores.len() - vals.len();
-                }
-                if scores.len() >= val + 10 { break }
             }
             scores.push(new_num - 10);
-            if scores.len() >= vals.len() && vals.iter().zip(scores.iter().skip(scores.len() - vals.len()).take(vals.len())).all(|(a, b)| a == b) {
-                if res_part_2 == 0 {
+            if check(&scores, &vals) && res_part_2 == 0 {
                     res_part_2 = scores.len() - vals.len();
-                }
-                if scores.len() >= val + 10 { break }
             }
         } else {
             scores.push(new_num);
-            if scores.len() >= vals.len() && vals.iter().zip(scores.iter().skip(scores.len() - vals.len()).take(vals.len())).all(|(a, b)| a == b) {
-                if res_part_2 == 0 {
+            if check(&scores, &vals) && res_part_2 == 0 {
                     res_part_2 = scores.len() - vals.len();
-                }
-                if scores.len() >= val + 10 { break }
             }
         }
         // update indices
