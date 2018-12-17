@@ -37,7 +37,6 @@ fn part_1(input: &str) -> usize {
 
 fn part_2(input: &str) -> usize {
     for power in 4.. {
-        println!("Simulating power {}", power);
         let mut g = Game::new(input, power);
 
         for i in 0.. {
@@ -54,7 +53,6 @@ fn part_2(input: &str) -> usize {
                 if let Some((y, x)) = new_pos {
                     new_positions.push((y, x));
                     if g.attack(y, x) {
-                        println!("Elf died (power={})!", power);
                         elf_died = true;
                         break;
                     }
