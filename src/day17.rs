@@ -2,6 +2,28 @@ use regex::Regex;
 use itertools::iproduct;
 use std::ops::RangeInclusive;
 
+
+#[derive(Clone, PartialEq)]
+enum Cell {
+    Sand,
+    Clay,
+    WaterFlow,
+    WaterRest,
+}
+
+
+type Grid = Vec<Vec<Cell>>;
+
+
+struct Clay {
+    x: RangeInclusive<usize>,
+    y: RangeInclusive<usize>,
+}
+
+
+enum Dir { Left, Right, Both }
+
+
 pub fn calc(input: &str) -> (String, String) {
     let grid = simulate(input);
     // count Water cells
@@ -10,6 +32,7 @@ pub fn calc(input: &str) -> (String, String) {
         .fold((0, 0), |a, b| (a.0 + b.0 as usize, a.1 + b.1 as usize));
     ((flow+still).to_string(), still.to_string())
 }
+
 
 fn simulate(input: &str) -> Grid {
     // parse input
@@ -43,6 +66,7 @@ fn simulate(input: &str) -> Grid {
     grid
 }
 
+
 fn calc_cell(grid: &mut Grid, x: usize, y: usize, dir: &Dir) -> Option<usize> {
     if y == grid.len() { return None }
     match grid[y][x] {
@@ -68,9 +92,6 @@ fn calc_cell(grid: &mut Grid, x: usize, y: usize, dir: &Dir) -> Option<usize> {
     }
 }
 
-enum Dir { Left, Right, Both }
-
-type Grid = Vec<Vec<Cell>>;
 
 #[allow(clippy::ptr_arg)]
 fn _print_grid(g: &Grid) {
@@ -84,18 +105,6 @@ fn _print_grid(g: &Grid) {
     }
 }
 
-#[derive(Clone, PartialEq)]
-enum Cell {
-    Sand,
-    Clay,
-    WaterFlow,
-    WaterRest,
-}
-
-struct Clay {
-    x: RangeInclusive<usize>,
-    y: RangeInclusive<usize>,
-}
 
 #[cfg(test)]
 mod tests {
