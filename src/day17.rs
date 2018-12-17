@@ -1,26 +1,18 @@
 use regex::Regex;
+use itertools::iproduct;
+use std::ops::RangeInclusive;
 
 pub fn calc(input: &str) -> (String, String) {
-    (part_1(input).to_string(), part_2(input).to_string())
+    let grid = simulate(input);
+    // count Water cells
+    let (flow, still) = grid.iter().flatten()
+        .map(|x| (*x == Cell::WaterFlow, *x == Cell::WaterRest))
+        .fold((0, 0), |a, b| (a.0 + b.0 as usize, a.1 + b.1 as usize));
+    ((flow+still).to_string(), still.to_string())
 }
 
-fn part_1(input: &str) -> usize {
-    let grid = simulate_water(input);
-    grid.iter().flatten().filter(|x| x.is_water()).count()
-}
-
-fn part_2(input: &str) -> usize {
-    let grid = simulate_water(input);
-    grid.iter().flatten().filter(|x| x.is_still_water()).count()
-}
-
-enum Dir {
-    Left,
-    Right,
-    Both
-}
-
-fn simulate_water(input: &str) -> Grid {
+fn simulate(input: &str) -> Grid {
+    // parse input
     let re = Regex::new(r"([xy])=(\d+), [xy]=(\d+)..(\d+)").unwrap();
     let mut clays: Vec<Clay> = vec!();
     for c in re.captures_iter(input) {
@@ -29,50 +21,44 @@ fn simulate_water(input: &str) -> Grid {
         let b = c[3].parse().unwrap();
         let c = c[4].parse().unwrap();
         clays.push(if xy == "x" {
-            Clay(a, a, b, c)
+            Clay { x: a..=a, y: b..=c }
         } else {
-            Clay(b, c, a, a)
+            Clay { x: b..=c, y: a..=a }
         });
     }
-    let min_x = clays.iter().map(|c| c.0).min().unwrap();
-    let min_y = clays.iter().map(|c| c.2).min().unwrap();
-    let max_x = clays.iter().map(|c| c.1).max().unwrap();
-    let max_y = clays.iter().map(|c| c.3).max().unwrap();
+    let min_x = clays.iter().map(|c| *c.x.start()).min().unwrap();
+    let min_y = clays.iter().map(|c| *c.y.start()).min().unwrap();
+    let max_x = clays.iter().map(|c| *c.x.end()).max().unwrap();
+    let max_y = clays.iter().map(|c| *c.y.end()).max().unwrap();
 
-    let mut grid: Grid = vec![vec![Cell::Sand; max_x - min_x + 3]; max_y - min_y + 1];
-    
-    for c in clays {
-        for y in c.2..=c.3 {
-            for x in c.0..=c.1 {
-                grid[y-min_y][x-min_x+1] = Cell::Clay;
-            }
-        }
-    }
+    // generate grid and set clay cells
+    let mut grid: Grid = vec![vec![Cell::Sand; max_x - min_x + 3]; max_y - min_y + 1];    
+    clays.into_iter()
+         .flat_map(|c| iproduct!(c.y, c.x))
+         .for_each(|(y, x)| grid[y - min_y][x - min_x + 1] = Cell::Clay);
 
+    // run the simulation
     calc_cell(&mut grid, 500-min_x, 0, &Dir::Both);
 
     grid
 }
 
-fn calc_cell(grid: &mut Grid, x: usize, y: usize, dir: &Dir) -> bool {
-    if y == grid.len() { return false }
+fn calc_cell(grid: &mut Grid, x: usize, y: usize, dir: &Dir) -> Option<usize> {
+    if y == grid.len() { return None }
     match grid[y][x] {
-        Cell::Clay | Cell::WaterRest => true,
-        Cell::WaterFlow => false,
+        Cell::Clay | Cell::WaterRest => Some(x),
+        Cell::WaterFlow => None,
         Cell::Sand => {
             grid[y][x] = Cell::WaterFlow;
-            if !calc_cell(grid, x, y+1, &Dir::Both) {
-                return false;
-            }
+            calc_cell(grid, x, y+1, &Dir::Both)?;
             match dir {
                 Dir::Both => {
-                    let res_left = calc_cell(grid, x-1, y, &Dir::Left);
-                    let res_right = calc_cell(grid, x+1, y, &Dir::Right);
-                    if res_left && res_right {
-                        fill_left_right(grid, x, y);
-                        true
-                    } else {
-                        false
+                    match (calc_cell(grid, x-1, y, &Dir::Left), calc_cell(grid, x+1, y, &Dir::Right)) {
+                        (Some(l), Some(r)) => {
+                            grid[y].iter_mut().skip(l+1).take(r-l-1).for_each(|x| *x = Cell::WaterRest);
+                            Some(x)
+                        },
+                        _ => None
                     }
                 },
                 Dir::Left => calc_cell(grid, x-1, y, &Dir::Left),
@@ -82,24 +68,7 @@ fn calc_cell(grid: &mut Grid, x: usize, y: usize, dir: &Dir) -> bool {
     }
 }
 
-fn fill_left_right(grid: &mut Grid, x: usize, y: usize) {
-    grid[y][x] = Cell::WaterRest;
-    for tx in 1.. {
-        if grid[y][x-tx] == Cell::WaterFlow {
-            grid[y][x-tx] = Cell::WaterRest;
-        } else {
-            break;
-        }
-    }
-
-    for tx in 1.. {
-        if grid[y][x+tx] == Cell::WaterFlow {
-            grid[y][x+tx] = Cell::WaterRest;
-        } else {
-            break;
-        }
-    }
-}
+enum Dir { Left, Right, Both }
 
 type Grid = Vec<Vec<Cell>>;
 
@@ -123,24 +92,10 @@ enum Cell {
     WaterRest,
 }
 
-impl Cell {
-    fn is_water(&self) -> bool {
-        match self {
-            Cell::WaterFlow | Cell::WaterRest => true,
-            _ => false
-        }
-    }
-
-    fn is_still_water(&self) -> bool {
-        match self {
-            Cell::WaterRest => true,
-            _ => false
-        }
-    }
+struct Clay {
+    x: RangeInclusive<usize>,
+    y: RangeInclusive<usize>,
 }
-
-#[derive(Debug)]
-struct Clay(usize, usize, usize, usize);
 
 #[cfg(test)]
 mod tests {
@@ -149,28 +104,28 @@ mod tests {
     #[test]
     fn test_part_1() {
         assert_eq!(
-            part_1("x=495, y=2..7\n\
-                    y=7, x=495..501\n\
-                    x=501, y=3..7\n\
-                    x=498, y=2..4\n\
-                    x=506, y=1..2\n\
-                    x=498, y=10..13\n\
-                    x=504, y=10..13\n\
-                    y=13, x=498..504"), 
-            57);
+            calc("x=495, y=2..7\n\
+                  y=7, x=495..501\n\
+                  x=501, y=3..7\n\
+                  x=498, y=2..4\n\
+                  x=506, y=1..2\n\
+                  x=498, y=10..13\n\
+                  x=504, y=10..13\n\
+                  y=13, x=498..504").0, 
+            "57");
     }
 
     #[test]
     fn test_part_2() {
         assert_eq!(
-            part_2("x=495, y=2..7\n\
-                    y=7, x=495..501\n\
-                    x=501, y=3..7\n\
-                    x=498, y=2..4\n\
-                    x=506, y=1..2\n\
-                    x=498, y=10..13\n\
-                    x=504, y=10..13\n\
-                    y=13, x=498..504"), 
-            29);
+            calc("x=495, y=2..7\n\
+                  y=7, x=495..501\n\
+                  x=501, y=3..7\n\
+                  x=498, y=2..4\n\
+                  x=506, y=1..2\n\
+                  x=498, y=10..13\n\
+                  x=504, y=10..13\n\
+                  y=13, x=498..504").1, 
+            "29");
     }
 }
