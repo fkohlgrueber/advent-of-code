@@ -1,0 +1,32 @@
+#ip 1
+00 - seti 0x7B - r2        # 
+01 - bani r2 0x1CB r2      #
+02 - eqri r2 0x48 r2       #
+03 - addr r2 ip ip         #
+04 - seti 0 - ip           # init check end
+05 - seti 0 - r2             # r2 = 0                                
+06 - bori r2 65536 r5        # r5 = r2 | 0x1_0000                    r5 = 0x1_0000 
+07 - seti 4843319 - r2       # r2 = ‭0x49_E737‬                        r2 = ‭0x49_E737‬
+08 - bani r5 255 r4            # r4 = r5 & 0xFF           <          loop {  
+09 - addr r2 r4 r2             # r2 += r4                              r4 = r5 & 0xFF
+10 - bani r2 16777215 r2       # r2 &= 0xFF_FFFF                       r2 = ((r2 + r4) * 0x‭1_016B‬) & 0xFF_FFFF
+11 - muli r2 65899 r2          # r2 *= 0x‭1_016B‬
+12 - bani r2 16777215 r2       # r2 &= 0xFF_FFFF
+13 - gtir 256 r5 r4            # if r5 < 256 goto #28                  if r5 < 256 {
+14 - addr r4 ip ip             # else goto #17                           break;
+15 - addi ip 1 ip              #                                       }
+16 - seti 27 - ip              #
+17 - seti 0 - r4               # r4 = 0                                while (r4 + 1) * 0x100 <= r5 {
+18 - addi r4 1 r3                # r3 = r4 + 1              <            r4 += 1
+19 - muli r3 256 r3              # r3 *= 0x100                         }
+20 - gtrr r3 r5 r3               # if r3 > r5 goto #26
+21 - addr r3 ip ip               # else goto #24
+22 - addi ip 1 ip                # 
+23 - seti 25 - ip                #
+24 - addi r4 1 r4                # r4 += 1
+25 - seti 17 - ip                # goto #18
+26 - setr r4 - r5              # r5 = r4                                r5 = r4
+27 - seti 7 - ip               # goto #8                              }
+28 - eqrr r2 r0 r4          # if r2 == r0 goto END                    if r2 == r0 goto END
+29 - addr r4 ip ip          # else goto #6
+30 - seti 5 - ip            #
