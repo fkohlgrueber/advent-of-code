@@ -79,9 +79,4 @@ mod tests {
                     |.||||..|.\n\
                     ...#.|..|."), 1147);
     }
-
-    #[test]
-    fn test_part_2() {
-        assert_eq!(part_2(""), 0);
-    }
 }
