@@ -15,7 +15,7 @@ fn part_2(input: &str) -> i64 {
     calc_generations(input, 50_000_000_000)
 }
 
-fn calc_generations(input: &str, num_generations: usize) -> i64 {
+fn calc_generations(input: &str, num_generations: u64) -> i64 {
     
     // return sum of indices of pots that contain a plant
     let (rules, mut pots) = parse_input(input);
