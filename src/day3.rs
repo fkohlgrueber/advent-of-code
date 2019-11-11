@@ -2,9 +2,6 @@
 #[allow(unused_imports)]
 use aoc_tools::prelude::*;
 
-use regex::Regex;
-use lazy_static::lazy_static;
-
 pub fn calc(input: &str) -> (String, String) {
     (part_1(input).to_string(), part_2(input).to_string())
 }
@@ -117,6 +114,7 @@ fn gen_grid(patches: &[Patch]) -> Grid {
     grid
 }
 
+#[parse(r"#{} @ {},{}: {}x{}")]
 #[derive(Debug)]
 struct Patch {
     id: usize,
@@ -126,25 +124,6 @@ struct Patch {
     heigth: usize,
 }
 
-impl Patch {
-    fn from_str(s: &str) -> Option<Patch> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(r"^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$").unwrap();
-        }
-
-        if let Some(cap) = RE.captures(s) {
-            Some(Patch {
-                id: cap[1].parse().unwrap(),
-                left: cap[2].parse().unwrap(),
-                top: cap[3].parse().unwrap(),
-                width: cap[4].parse().unwrap(),
-                heigth: cap[5].parse().unwrap(),
-            })
-        } else {
-            None
-        }
-    }
-}
 
 #[cfg(test)]
 mod tests {
