@@ -1,6 +1,9 @@
+
+#[allow(unused_imports)]
+use aoc_tools::prelude::*;
+
 use regex::Regex;
-use std::cmp::{Ordering, max};
-use std::collections::{BinaryHeap, HashMap};
+use std::cmp::Ordering;
 
 pub fn calc(input: &str) -> (String, String) {
     (part_1(input).to_string(), part_2(input).to_string())

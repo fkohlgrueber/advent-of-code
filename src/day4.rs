@@ -1,8 +1,8 @@
-extern crate regex;
-extern crate chrono;
+
+#[allow(unused_imports)]
+use aoc_tools::prelude::*;
 
 use regex::Regex;
-use std::collections::HashMap;
 use chrono::prelude::*;
 use lazy_static::lazy_static;
 

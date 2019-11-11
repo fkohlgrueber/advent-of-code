@@ -1,4 +1,7 @@
-use std::cmp::max;
+
+#[allow(unused_imports)]
+use aoc_tools::prelude::*;
+
 use rayon::prelude::*;
 use itertools::iproduct;
 

@@ -1,3 +1,7 @@
+
+#[allow(unused_imports)]
+use aoc_tools::prelude::*;
+
 use itertools::iproduct;
 
 pub fn calc(input: &str) -> (String, String) {

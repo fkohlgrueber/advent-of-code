@@ -1,3 +1,7 @@
+
+#[allow(unused_imports)]
+use aoc_tools::prelude::*;
+
 use regex::Regex;
 use lazy_static::lazy_static;
 

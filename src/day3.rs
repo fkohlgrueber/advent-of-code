@@ -1,5 +1,8 @@
+
+#[allow(unused_imports)]
+use aoc_tools::prelude::*;
+
 use regex::Regex;
-use std::cmp::{max, min};
 use lazy_static::lazy_static;
 
 pub fn calc(input: &str) -> (String, String) {

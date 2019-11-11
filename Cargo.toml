@@ -11,3 +11,4 @@ chrono = "0.4.6"
 lazy_static = "1.2.0"
 rayon = "1.0.3"
 itertools = "0.8.0"
+aoc-tools = { path="aoc-tools" }

@@ -1,5 +1,6 @@
-use std::collections::HashMap;
-use std::collections::HashSet;
+
+#[allow(unused_imports)]
+use aoc_tools::prelude::*;
 
 pub fn calc(input: &str) -> (String, String) {
     (part_1(input).to_string(), part_2(input, 10000).to_string())

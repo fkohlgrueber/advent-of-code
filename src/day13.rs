@@ -1,5 +1,8 @@
+
+#[allow(unused_imports)]
+use aoc_tools::prelude::*;
+
 use std::ops::{Add, Sub};
-use std::cmp::{min, max};
 
 pub fn calc(input: &str) -> (String, String) {
     (part_1(input).to_string(), part_2(input).to_string())

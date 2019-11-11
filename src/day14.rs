@@ -1,3 +1,8 @@
+
+#[allow(unused_imports)]
+use aoc_tools::prelude::*;
+
+
 fn check(scores: &[u8], vals: &[u8]) -> bool {
     scores.len() >= vals.len() && vals.iter().zip(scores.iter().skip(scores.len() - vals.len()).take(vals.len())).all(|(a, b)| a == b)
 }
