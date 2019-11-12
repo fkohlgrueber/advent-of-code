@@ -2,7 +2,6 @@
 #[allow(unused_imports)]
 use aoc_tools::prelude::*;
 
-use regex::Regex;
 use itertools::iproduct;
 use std::ops::RangeInclusive;
 
@@ -37,22 +36,20 @@ pub fn calc(input: &str) -> (String, String) {
     ((flow+still).to_string(), still.to_string())
 }
 
+#[parse(r"{}={}, .={}..{}")]
+struct InputData(char, usize, usize, usize);
 
 fn simulate(input: &str) -> Grid {
     // parse input
-    let re = Regex::new(r"([xy])=(\d+), [xy]=(\d+)..(\d+)").unwrap();
-    let mut clays: Vec<Clay> = vec!();
-    for c in re.captures_iter(input) {
-        let xy = &c[1];
-        let a = c[2].parse().unwrap();
-        let b = c[3].parse().unwrap();
-        let c = c[4].parse().unwrap();
-        clays.push(if xy == "x" {
-            Clay { x: a..=a, y: b..=c }
+    let input = InputData::from_str_multiple(input);
+    let clays = input.into_iter().map(|data| {
+        if data.0 == 'x' {
+            Clay { x: data.1..=data.1, y: data.2..=data.3 }
         } else {
-            Clay { x: b..=c, y: a..=a }
-        });
-    }
+            Clay { x: data.2..=data.3, y: data.1..=data.1 }
+        }
+    }).collect::<Vec<_>>();
+    
     let min_x = clays.iter().map(|c| *c.x.start()).min().unwrap();
     let min_y = clays.iter().map(|c| *c.y.start()).min().unwrap();
     let max_x = clays.iter().map(|c| *c.x.end()).max().unwrap();
