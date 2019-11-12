@@ -50,12 +50,12 @@ struct MarbleGame {
 impl MarbleGame {
     fn from_str(input: &str, multiplier: usize) -> MarbleGame {
         let input = MarbleInput::from_str(input).unwrap();
-        
+        let max_marble = input.max_marble * multiplier;
         MarbleGame {
-            marbles: (0..=input.max_marble).map(Marble::new).collect(),
+            marbles: (0..=max_marble).map(Marble::new).collect(),
             player_scores: vec![0; input.num_players],
             current_marble: 0,
-            next_marbles: 1..=input.max_marble,
+            next_marbles: 1..=max_marble,
             player_turns: (0..input.num_players).cycle()
         }
     }

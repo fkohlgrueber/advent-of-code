@@ -4,28 +4,41 @@ use quote::quote;
 use quote::ToTokens;
 
 
+#[proc_macro]
+pub fn parse_multiple(input: TokenStream) -> TokenStream {
+    input
+}
+
 #[proc_macro_attribute]
 pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     // parse item as a syn struct
-    let strukt = syn::parse_macro_input!(item as syn::ItemStruct);
+    let mut strukt = syn::parse_macro_input!(item as syn::ItemStruct);
     let name = &strukt.ident;
     
     
     // extract name and type for each struct element
     let mut items = vec!();
-    let fields = match &strukt.fields {
+    let fields = match &mut strukt.fields {
         syn::Fields::Named(nf) => {
-            &nf.named
+            &mut nf.named
         }
         syn::Fields::Unnamed(uf) => {
-            &uf.unnamed
+            &mut uf.unnamed
         }
         syn::Fields::Unit => panic!("Unit structs aren't supported!")
     };
     for field in fields {
+        let mut custom_pattern = None;
+        if !field.attrs.is_empty() && &field.attrs[0].path.to_token_stream().to_string() == "parse" {
+            let meta = field.attrs[0].parse_meta().unwrap();
+            if let syn::Meta::NameValue(syn::MetaNameValue { lit: syn::Lit::Str(lit_str), .. }) = meta {
+                custom_pattern = Some(lit_str.value());
+                field.attrs.remove(0);
+            }
+        }
         items.push(
-            (field.ident.as_ref(), field.ty.to_token_stream().to_string())
+            (field.ident.as_ref(), field.ty.to_token_stream().to_string(), custom_pattern)
         )
     }
 
@@ -39,7 +52,10 @@ pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
     // generate the regex pattern string
     let mut regex_str = String::new();
     for (pattern_prefix, item) in parts.iter().zip(items.iter()) {
-        let regex_for_type = get_regex_for_type(&item.1);
+        let regex_for_type = match &item.2 {
+            Some(s) => s.clone(),
+            None => get_regex_for_type(&item.1).to_string(),
+        };
         regex_str.push_str(&format!("{}({})", pattern_prefix, regex_for_type));
     }
     regex_str.push_str(parts.last().unwrap());
@@ -71,13 +87,20 @@ pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
                 }
                 &RE
             }
-            
-            pub fn from_str(s: &str) -> Option<Self> {
-                Self::get_regex().captures(s).map(|cap| #initializer )
-            }
 
             pub fn from_str_multiple(s: &str) -> Vec<Self> {
                 Self::get_regex().captures_iter(s).map(|cap| #initializer ).collect()
+            }
+        }
+
+        impl std::str::FromStr for #name {
+            type Err = String;
+
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                match Self::get_regex().captures(s){
+                    Some(cap) => Ok(#initializer),
+                    None => Err("Regex didn't match".to_string()),
+                }
             }
         }
     ).into()
@@ -87,6 +110,7 @@ pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
 fn get_regex_for_type(ty: &str) -> &'static str {
     match ty {
         "usize" => r"\d+",
+        "i32" => r"[-+]?\d+",
         "f64" => r"[0-9]*\.?[0-9]*",
         "char" => r".",
         "bool" => r"true|false",

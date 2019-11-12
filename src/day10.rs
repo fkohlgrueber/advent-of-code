@@ -2,9 +2,6 @@
 #[allow(unused_imports)]
 use aoc_tools::prelude::*;
 
-use regex::Regex;
-use lazy_static::lazy_static;
-
 pub fn calc(input: &str) -> (String, String) {
     let mut p1 = String::from("\n");
     p1.push_str(&part_1(input));
@@ -12,7 +9,7 @@ pub fn calc(input: &str) -> (String, String) {
 }
 
 fn part_1(input: &str) -> String {
-    let points : Vec<Point> = input.lines().map(Point::from_str).collect();
+    let points : Vec<Point> = Point::from_str_multiple(input);
     let (i, bb) = calc_smallest_bb(&points);
 
     // generate picture
@@ -25,7 +22,7 @@ fn part_1(input: &str) -> String {
 }
 
 fn part_2(input: &str) -> i32 {
-    let points : Vec<Point> = input.lines().map(Point::from_str).collect();
+    let points : Vec<Point> = Point::from_str_multiple(input);
     let (i, _) = calc_smallest_bb(&points);
     i
 }
@@ -52,6 +49,7 @@ fn calc_smallest_bb(points: &[Point]) -> (i32, BoundingBox) {
     (i-1, maybe_bb_old.unwrap())
 }
 
+#[parse("< *{}, *{}>")]
 #[derive(Clone, Copy)]
 struct Coord {
     x: i32,
@@ -74,24 +72,16 @@ impl Coord {
     }
 }
 
+#[parse("position={} velocity={}")]
 #[derive(Clone, Copy)]
 struct Point {
+    #[parse = "<.*>"]
     position: Coord,
+    #[parse = "<.*>"]
     velocity: Coord,
 }
 
 impl Point {
-    fn from_str(input: &str) -> Point {
-        lazy_static! {
-            static ref RE : Regex = Regex::new(r"position=< *(.+), *(.+)> velocity=< *(.+), *(.+)>").unwrap();
-        }
-        let cap = RE.captures(input).unwrap();
-        Point {
-            position: Coord::new(cap[1].parse().unwrap(), cap[2].parse().unwrap()),
-            velocity: Coord::new(cap[3].parse().unwrap(), cap[4].parse().unwrap()),
-        }
-    }
-
     fn get(&self, i: i32) -> Coord {
         Coord {
             x: self.position.x + self.velocity.x * i,

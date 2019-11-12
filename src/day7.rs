@@ -2,7 +2,6 @@
 #[allow(unused_imports)]
 use aoc_tools::prelude::*;
 
-use regex::Regex;
 
 pub fn calc(input: &str) -> (String, String) {
     (part_1(input), part_2(input, 5, 60).to_string())

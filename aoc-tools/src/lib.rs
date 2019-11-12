@@ -8,7 +8,8 @@ pub mod prelude {
     };
     pub use std::cmp::{max, min};
 
-    pub use aoc_tools_macros::parse;
+    pub use aoc_tools_macros::{parse, parse_multiple};
+    pub use std::str::FromStr;
 }
 
 pub mod __imp {

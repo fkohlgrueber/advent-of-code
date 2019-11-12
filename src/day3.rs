@@ -7,14 +7,14 @@ pub fn calc(input: &str) -> (String, String) {
 }
 
 fn part_1(input: &str) -> i32 {
-    let patches: Vec<Patch> = input.lines().filter_map(|l| Patch::from_str(l)).collect();
+    let patches: Vec<Patch> = Patch::from_str_multiple(input);
     let grid = gen_grid(&patches);
     
     grid.values.iter().filter(|x| **x > 1).count() as i32
 }
 
 fn part_2(input: &str) -> i32 {
-    let patches: Vec<Patch> = input.lines().filter_map(|l| Patch::from_str(l)).collect();
+    let patches: Vec<Patch> = Patch::from_str_multiple(input);
     let grid = gen_grid(&patches);
 
     // check patches
