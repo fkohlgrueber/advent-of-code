@@ -7,18 +7,12 @@ pub fn calc(input: &str) -> (String, String) {
 }
 
 fn part_1(input: &str) -> i32 {
-    let points: Vec<Point> = input
-        .lines()
-        .map(|s| Point::from_str(s))
-        .collect();
+    let points = Point::from_str_multiple(input);
     closest(&points) as i32
 }
 
 fn part_2(input: &str, threshold: usize) -> i32 {
-    let points: Vec<Point> = input
-        .lines()
-        .map(|s| Point::from_str(s))
-        .collect();
+    let points = Point::from_str_multiple(input);
     
     let min_y = points.iter().map(|p| p.y).min().unwrap_or(0);
     let min_x = points.iter().map(|p| p.x).min().unwrap_or(0);
@@ -39,6 +33,7 @@ fn part_2(input: &str, threshold: usize) -> i32 {
     num_coords
 }
 
+#[parse("{}, {}")]
 #[derive(PartialEq, Eq, Hash)]
 struct Point {
     x: usize,
@@ -46,13 +41,6 @@ struct Point {
 }
 
 impl Point {
-    fn from_str(s: &str) -> Point {
-        let coords: Vec<usize> = s.split(", ").map(|x| x.parse().unwrap()).collect();
-        Point {
-            x: coords[0],
-            y: coords[1],
-        }
-    }
 
     fn distance_to(&self, other: &Point) -> usize {
         abs_diff(self.x, other.x) + abs_diff(self.y, other.y)

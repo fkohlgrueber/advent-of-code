@@ -114,21 +114,18 @@ impl Node {
     }
 }
 
+#[parse("Step {} must be finished before step {} can begin.")]
+struct InputLine(char, char);
+
 fn gen_nodes(input: &str) -> HashMap<char, Node> {
     // init hash table for nodes
     let mut nodes: HashMap<char, Node> = HashMap::new();
 
     // parse input
-    let re = Regex::new(r"Step (.) must be finished before step (.) can begin.").unwrap();
-    let mut dependencies = Vec::new();
-    for cap in re.captures_iter(input) {
-        let char1 = cap[1].chars().next().unwrap();
-        let char2 = cap[2].chars().next().unwrap();
-        dependencies.push((char1, char2));
-    }
-
+    let dependencies = InputLine::from_str_multiple(input);
+    
     // create nodes and populate dependencies
-    for (char1, char2) in dependencies {
+    for InputLine(char1, char2) in dependencies {
         // char2 depends on char1
 
         // make sure that char1 exists

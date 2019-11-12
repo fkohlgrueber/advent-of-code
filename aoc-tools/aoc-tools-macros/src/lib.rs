@@ -14,12 +14,19 @@ pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
     
     // extract name and type for each struct element
     let mut items = vec!();
-    if let syn::Fields::Named(nf) = &strukt.fields {
-        for field in &nf.named {
-            items.push(
-                (field.ident.as_ref().unwrap(), field.ty.to_token_stream().to_string())
-            )
+    let fields = match &strukt.fields {
+        syn::Fields::Named(nf) => {
+            &nf.named
         }
+        syn::Fields::Unnamed(uf) => {
+            &uf.unnamed
+        }
+        syn::Fields::Unit => panic!("Unit structs aren't supported!")
+    };
+    for field in fields {
+        items.push(
+            (field.ident.as_ref(), field.ty.to_token_stream().to_string())
+        )
     }
 
     // parse groups from input. A group is delimited by curly braces
@@ -40,11 +47,19 @@ pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
     // generate initializers for each struct element
     let mut inits = vec!();
     for (idx, item) in items.iter().enumerate() {
-        let name = &item.0;
-        inits.push(quote!( #name: cap[#idx+1].parse().unwrap()));
+        let name = match &item.0 {
+            Some(n) => quote!( #n: ),
+            None => quote!()
+        };
+        inits.push(quote!( #name cap[#idx+1].parse().unwrap()));
     }
 
-    
+    let initializer = match &strukt.fields {
+        syn::Fields::Named(_) => quote!( Self { #(#inits),* } ),
+        syn::Fields::Unnamed(_) => quote!( Self ( #(#inits),* ) ),
+        _ => panic!()
+    };
+
     quote!(
         #strukt
 
@@ -58,11 +73,11 @@ pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
             }
             
             pub fn from_str(s: &str) -> Option<Self> {
-                Self::get_regex().captures(s).map(|cap| Self { #(#inits),* })
+                Self::get_regex().captures(s).map(|cap| #initializer )
             }
 
             pub fn from_str_multiple(s: &str) -> Vec<Self> {
-                Self::get_regex().captures_iter(s).map(|cap| Self { #(#inits),* }).collect()
+                Self::get_regex().captures_iter(s).map(|cap| #initializer ).collect()
             }
         }
     ).into()

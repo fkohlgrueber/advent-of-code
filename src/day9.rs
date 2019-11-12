@@ -2,7 +2,6 @@
 #[allow(unused_imports)]
 use aoc_tools::prelude::*;
 
-use regex::Regex;
 
 pub fn calc(input: &str) -> (String, String) {
     (part_1(input).to_string(), part_2(input).to_string())
@@ -34,6 +33,12 @@ impl Marble {
     }
 }
 
+#[parse("{} players; last marble is worth {} points")]
+struct MarbleInput {
+    num_players: usize,
+    max_marble: usize
+}
+
 struct MarbleGame {
     marbles: Vec<Marble>,
     player_scores: Vec<usize>,
@@ -44,17 +49,14 @@ struct MarbleGame {
 
 impl MarbleGame {
     fn from_str(input: &str, multiplier: usize) -> MarbleGame {
-        let re = Regex::new(r"(\d+) players; last marble is worth (\d+) points").unwrap();
-        let cap = re.captures(input).unwrap();
-        let num_players : usize = cap[1].parse().unwrap();
-        let max_marble : usize = cap[2].parse::<usize>().unwrap() * multiplier;
-
-        MarbleGame{
-            marbles: (0..=max_marble).map(Marble::new).collect(),
-            player_scores: vec![0; num_players],
+        let input = MarbleInput::from_str(input).unwrap();
+        
+        MarbleGame {
+            marbles: (0..=input.max_marble).map(Marble::new).collect(),
+            player_scores: vec![0; input.num_players],
             current_marble: 0,
-            next_marbles: 1..=max_marble,
-            player_turns: (0..num_players).cycle()
+            next_marbles: 1..=input.max_marble,
+            player_turns: (0..input.num_players).cycle()
         }
     }
 
