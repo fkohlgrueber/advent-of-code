@@ -2,8 +2,6 @@
 #[allow(unused_imports)]
 use aoc_tools::prelude::*;
 
-use regex::Regex;
-
 type Rules = [u8; 32];
 type Pots = Vec<u8>;
 
@@ -66,13 +64,18 @@ fn calc_generations(input: &str, num_generations: u64) -> i64 {
     pots.iter().enumerate().map(|(i, b)| (i as i64 + offset) * i64::from(*b)).sum::<i64>()
 }
 
+#[parse("initial state: {}")]
+struct State(
+    #[parse = ".*"]
+    String
+);
+
 fn parse_input(input: &str) -> (Rules, Pots) {
 
     let mut rules : Rules = [0; 32];
     let mut lines = input.lines();
 
-    let re = Regex::new(r"initial state: (.*)").unwrap();
-    let state_chars = &re.captures(lines.next().unwrap()).unwrap()[1];
+    let state_chars = State::from_str(lines.next().unwrap()).unwrap().0;
 
     let mut pots : Pots = vec![0; state_chars.len() + 8];
 

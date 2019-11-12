@@ -9,6 +9,20 @@ pub fn parse_multiple(input: TokenStream) -> TokenStream {
     input
 }
 
+enum Ty {
+    Simple(String),
+    Vec(String)
+}
+
+impl Ty {
+    pub fn inner_ty(&self) -> &str {
+        match self {
+            Ty::Simple(s) => &s,
+            Ty::Vec(s) => &s,
+        }
+    }
+}
+
 #[proc_macro_attribute]
 pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
 
@@ -37,8 +51,14 @@ pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
                 field.attrs.remove(0);
             }
         }
+        let ty_str = field.ty.to_token_stream().to_string();
+        let ty = if ty_str.starts_with("Vec < ") {
+            Ty::Vec(ty_str[6..ty_str.len()-2].to_string())
+        } else {
+            Ty::Simple(ty_str)
+        };
         items.push(
-            (field.ident.as_ref(), field.ty.to_token_stream().to_string(), custom_pattern)
+            (field.ident.as_ref(), ty, custom_pattern)
         )
     }
 
@@ -54,7 +74,7 @@ pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
     for (pattern_prefix, item) in parts.iter().zip(items.iter()) {
         let regex_for_type = match &item.2 {
             Some(s) => s.clone(),
-            None => get_regex_for_type(&item.1).to_string(),
+            None => get_regex_for_type(&item.1.inner_ty()).to_string(),
         };
         regex_str.push_str(&format!("{}({})", pattern_prefix, regex_for_type));
     }
@@ -67,7 +87,14 @@ pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
             Some(n) => quote!( #n: ),
             None => quote!()
         };
-        inits.push(quote!( #name cap[#idx+1].parse().unwrap()));
+        let ts = match &item.1 {
+            Ty::Simple(s) => quote!( #name cap[#idx+1].parse().unwrap()),
+            Ty::Vec(s) => {
+                let ty = syn::Ident::new(s, proc_macro2::Span::call_site());
+                quote!( #name #ty::from_str_multiple(&cap[#idx+1]))
+            },
+        };
+        inits.push(ts);
     }
 
     let initializer = match &strukt.fields {
