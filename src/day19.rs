@@ -2,16 +2,13 @@
 #[allow(unused_imports)]
 use aoc_tools::prelude::*;
 
-use regex::Regex;
-use lazy_static::lazy_static;
-
 pub fn calc(input: &str) -> (String, String) {
     (part_1(input).to_string(), part_2(input).to_string())
 }
 
 fn part_1(input: &str) -> usize {
     let ip_reg: usize = input.lines().next().unwrap().trim_start_matches("#ip ").parse().unwrap();
-    let insts = Instruction::from_str(input);
+    let insts = Instruction::from_str_multiple(input);
 
     let mut reg: State = [0; 6];
 
@@ -66,28 +63,12 @@ fn exec(before: State, opcode: &str, a: Num, b: Num, c: Num) -> State {
 }
 
 
+#[parse(r"\n{} {} {} {}")]
 #[derive(Debug, PartialEq)]
 struct Instruction {
+    #[parse = ".+"]
     op_str: String,
-    a: Num,
-    b: Num,
-    c: Num,
-}
-
-impl Instruction {
-    fn from_str(input: &str) -> Vec<Instruction> {
-        lazy_static! {
-            static ref re : Regex = Regex::new(
-                r"\n(.+) (\d+) (\d+) (\d+)").unwrap();
-        }
-        re.captures_iter(input).map(|cap| {
-                Instruction { 
-                    op_str: cap[1].to_string(),
-                    a: cap[2].parse().unwrap(), 
-                    b: cap[3].parse().unwrap(), 
-                    c: cap[4].parse().unwrap(),
-                }
-            }
-        ).collect()
-    }
+    a: usize,
+    b: usize,
+    c: usize,
 }

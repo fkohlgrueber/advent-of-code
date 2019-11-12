@@ -133,7 +133,7 @@ fn parse_struct(pattern: String, mut strukt: syn::ItemStruct, regexes: &mut std:
         if let Some(s) = regexes.get(*item_type) {
             return s.to_string();
         }
-        panic!("Unknown type!");
+        panic!(format!("Unknown type {}!", item_type));
     });
 
     // generate the regex pattern string
