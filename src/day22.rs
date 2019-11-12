@@ -2,7 +2,6 @@
 #[allow(unused_imports)]
 use aoc_tools::prelude::*;
 
-use regex::Regex;
 use std::cmp::Ordering;
 
 pub fn calc(input: &str) -> (String, String) {
@@ -228,12 +227,12 @@ impl Cave {
     }
 }
 
+#[parse(r"depth: {}\ntarget: {},{}")]
+struct InputData(usize, usize, usize);
+
 fn parse_input(input: &str) -> (usize, (usize, usize)) {
-    let re = Regex::new(r"depth: (\d+)\ntarget: (\d+),(\d+)").unwrap();
-    let cap = re.captures(input).unwrap();
-    let depth = cap[1].parse().unwrap();
-    let target = (cap[2].parse().unwrap(), cap[3].parse().unwrap());
-    (depth, target)
+    let data = InputData::from_str(input).unwrap();
+    (data.0, (data.1, data.2))
 }
 
 #[cfg(test)]
