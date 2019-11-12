@@ -64,7 +64,7 @@ const OPCODES: [&str; 16] = [
 ];
 
 fn exec(before: State, opcode: &str, inst: Inst) -> State {
-    let Inst { op_num, a, b, c } = inst;
+    let Inst { op_num: _, a, b, c } = inst;
     let mut reg = before;
     reg[c] = match opcode {
         "addr" => reg[a] + reg[b],
@@ -88,10 +88,38 @@ fn exec(before: State, opcode: &str, inst: Inst) -> State {
     reg
 }
 
+parse_multiple!{
+    #[parse(r"\[{}, {}, {}, {}\]")]
+    #[derive(PartialEq, Clone, Copy, Debug)]
+    struct State(usize, usize, usize, usize);
+    
+    #[parse("{} {} {} {}")]
+    #[derive(Clone, Copy, Debug)]
+    struct Inst {
+        op_num: usize,
+        a: usize,
+        b: usize,
+        c: usize,
+    }
 
-#[parse(r"\[{}, {}, {}, {}\]")]
-#[derive(PartialEq, Clone, Copy, Debug)]
-struct State(usize, usize, usize, usize);
+    #[parse(r"Before: {}\n{}\nAfter: *{}")]
+    #[derive(Debug)]
+    struct Sample {
+        before: State,
+        inst: Inst,
+        after: State,
+    }
+
+    #[parse(r"{}\n\n\n+{}")]
+    #[derive(Debug)]
+    struct InputData {
+        #[parse = "(?s:.*)" ]
+        samples: Vec<Sample>,
+        #[parse = "(?s:.*)" ]
+        instructions: Vec<Inst>,
+    }
+}
+
 
 impl std::ops::Index<usize> for State {
     type Output = usize;
@@ -119,31 +147,3 @@ impl std::ops::IndexMut<usize> for State {
     }
 }
 
-#[parse(r"Before: {}\n{}\nAfter: *{}")]
-#[derive(Debug)]
-struct Sample {
-    #[parse = r"\[\d+, \d+, \d+, \d+\]" ]
-    before: State,
-    #[parse = r"\d+ \d+ \d+ \d+" ]
-    inst: Inst,
-    #[parse = r"\[\d+, \d+, \d+, \d+\]" ]
-    after: State,
-}
-
-#[parse("{} {} {} {}")]
-#[derive(Clone, Copy, Debug)]
-struct Inst {
-    op_num: usize,
-    a: usize,
-    b: usize,
-    c: usize,
-}
-
-#[parse(r"{}\n\n\n+{}")]
-#[derive(Debug)]
-struct InputData {
-    #[parse = "(?s:.*)" ]
-    samples: Vec<Sample>,
-    #[parse = "(?s:.*)" ]
-    instructions: Vec<Inst>,
-}

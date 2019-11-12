@@ -4,9 +4,35 @@ use quote::quote;
 use quote::ToTokens;
 
 
+
+#[derive(Debug)]
+struct ParseInput(Vec<syn::ItemStruct>);
+
+impl syn::parse::Parse for ParseInput {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let mut elmts = vec!();
+        while !input.is_empty() {
+            elmts.push(input.parse()?)
+        }
+        Ok(Self(elmts))
+    }
+}
+
 #[proc_macro]
 pub fn parse_multiple(input: TokenStream) -> TokenStream {
-    input
+    let items = syn::parse_macro_input!(input as ParseInput);
+
+    let mut regexes = std::collections::HashMap::new();
+    let mut out_tokens = vec!();
+
+    for mut item in items.0.into_iter() {
+        let pattern = get_pattern_str(&item);
+        item.attrs.remove(0);
+        let tokens = parse_struct(pattern, item, &mut regexes);
+        out_tokens.push(tokens);
+    }
+    
+    out_tokens.into_iter().collect()
 }
 
 enum Ty {
@@ -25,13 +51,14 @@ impl Ty {
 
 #[proc_macro_attribute]
 pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
-
     // parse item as a syn struct
-    let mut strukt = syn::parse_macro_input!(item as syn::ItemStruct);
-    let name = &strukt.ident;
-    
-    
-    // extract name and type for each struct element
+    let strukt = syn::parse_macro_input!(item as syn::ItemStruct);
+    let pattern = syn::parse_macro_input!(attr as syn::LitStr).value();
+    let mut hm = std::collections::HashMap::new();
+    parse_struct(pattern, strukt, &mut hm)
+}
+
+fn extract_items(strukt: &mut syn::ItemStruct) -> Vec<(Option<&syn::Ident>, Ty, Option<String>)> {
     let mut items = vec!();
     let fields = match &mut strukt.fields {
         syn::Fields::Named(nf) => {
@@ -61,24 +88,65 @@ pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
             (field.ident.as_ref(), ty, custom_pattern)
         )
     }
+    items
+}
+
+fn get_pattern_str(item: &syn::ItemStruct) -> String {
+    // TODO: asssert that attr.path is "parse"
+    let pattern_expr: syn::ExprParen = syn::parse2(item.attrs[0].tokens.clone()).unwrap();
+    if let syn::Expr::Lit(l) = *pattern_expr.expr {
+        if let syn::Lit::Str(ls) = l.lit {
+            return ls.value();
+        }
+    }
+    panic!("something went wrong!")
+}
+
+fn split_pattern_str(pattern: &str) -> Vec<&str> {
+    pattern.split("{}").collect()
+}
+
+fn parse_struct(pattern: String, mut strukt: syn::ItemStruct, regexes: &mut std::collections::HashMap<String, String>) -> TokenStream {
+    let name = strukt.ident.clone();
+    
+    // extract name and type for each struct element
+    let items = extract_items(&mut strukt);
 
     // parse groups from input. A group is delimited by curly braces
-    let pattern: String = syn::parse_macro_input!(attr as syn::LitStr).value();
-    let parts = pattern.split("{}").collect::<Vec<_>>();
+    let parts = split_pattern_str(&pattern);
 
     // panic if number of brace pairs in pattern doesn't match number of struct elements
     assert!(parts.len() == items.len()+1);
+    //println!("{}, {}", parts.len(), items.len());
+
+    // calculate the regex for each item
+    let item_regexes = items.iter().map(|item| {
+        // respect custom regex
+        if let Some(s) = &item.2 {
+            return s.clone();
+        }
+        let item_type = &item.1.inner_ty();
+        // check if type is known (primitive types)
+        if let Some(s) = get_regex_for_type(item_type){
+            return s.to_string();
+        }
+        if let Some(s) = regexes.get(*item_type) {
+            return s.to_string();
+        }
+        panic!("Unknown type!");
+    });
 
     // generate the regex pattern string
     let mut regex_str = String::new();
-    for (pattern_prefix, item) in parts.iter().zip(items.iter()) {
-        let regex_for_type = match &item.2 {
-            Some(s) => s.clone(),
-            None => get_regex_for_type(&item.1.inner_ty()).to_string(),
-        };
-        regex_str.push_str(&format!("{}({})", pattern_prefix, regex_for_type));
+    let mut regex_str_without_groups = String::new();
+    for (pattern_prefix, item_regex) in parts.iter().zip(item_regexes) {
+        regex_str.push_str(&format!("{}({})", pattern_prefix, item_regex));
+        regex_str_without_groups.push_str(&format!("{}{}", pattern_prefix, item_regex));
     }
     regex_str.push_str(parts.last().unwrap());
+    regex_str_without_groups.push_str(parts.last().unwrap());
+
+    regexes.insert(name.to_string(), regex_str_without_groups);
 
     // generate initializers for each struct element
     let mut inits = vec!();
@@ -88,7 +156,7 @@ pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
             None => quote!()
         };
         let ts = match &item.1 {
-            Ty::Simple(s) => quote!( #name cap[#idx+1].parse().unwrap()),
+            Ty::Simple(_s) => quote!( #name cap[#idx+1].parse().unwrap()),
             Ty::Vec(s) => {
                 let ty = syn::Ident::new(s, proc_macro2::Span::call_site());
                 quote!( #name #ty::from_str_multiple(&cap[#idx+1]))
@@ -134,13 +202,13 @@ pub fn parse(attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 
-fn get_regex_for_type(ty: &str) -> &'static str {
+fn get_regex_for_type(ty: &str) -> Option<&'static str> {
     match ty {
-        "usize" => r"\d+",
-        "i32" => r"[-+]?\d+",
-        "f64" => r"[0-9]*\.?[0-9]*",
-        "char" => r".",
-        "bool" => r"true|false",
-        t => panic!(format!("Regex for type '{}' is unknown", t))
+        "usize" => Some(r"\d+"),
+        "i32" => Some(r"[-+]?\d+"),
+        "f64" => Some(r"[0-9]*\.?[0-9]*"),
+        "char" => Some(r"."),
+        "bool" => Some(r"true|false"),
+        _ => None
     }
 }
