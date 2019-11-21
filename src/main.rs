@@ -3,12 +3,6 @@ use std::io::prelude::*;
 use std::time::Instant;
 use structopt::StructOpt;
 
-mod day1;
-mod day2;
-mod day3;
-mod day4;
-mod day5;
-mod day6;
 mod day7;
 mod day8;
 mod day9;
@@ -28,12 +22,6 @@ mod day22;
 
 fn get_func(day_number: i32) -> Result<CalcFunction, String> {
     match day_number {
-        1 => Ok(day1::calc),
-        2 => Ok(day2::calc),
-        3 => Ok(day3::calc),
-        4 => Ok(day4::calc),
-        5 => Ok(day5::calc),
-        6 => Ok(day6::calc),
         7 => Ok(day7::calc),
         8 => Ok(day8::calc),
         9 => Ok(day9::calc),

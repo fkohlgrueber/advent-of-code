@@ -1,33 +1,45 @@
-
 #[allow(unused_imports)]
 use aoc_tools::prelude::*;
 
-pub fn calc(input: &str) -> (String, String) {
-    (part_1(input).to_string(), part_2(input).to_string())
-}
+pub struct Day();
 
-fn part_1(input: &str) -> i32 {
-    let patches: Vec<Patch> = Patch::from_str_multiple(input);
-    let grid = gen_grid(&patches);
-    
-    grid.values.iter().filter(|x| **x > 1).count() as i32
-}
+impl Challenge for Day {
+    type Input = (Vec<Patch>, Grid);
 
-fn part_2(input: &str) -> i32 {
-    let patches: Vec<Patch> = Patch::from_str_multiple(input);
-    let grid = gen_grid(&patches);
-
-    // check patches
-    for p in patches {
-        if grid.check_patch(&p) {
-            return p.id as i32;
-        }
+    fn parse(input: String) -> Self::Input {
+        let patches: Vec<Patch> = Patch::from_str_multiple(&input);
+        let grid = gen_grid(&patches);
+        (patches, grid)
     }
 
-    panic!("No non-overlapping patch found")
+    fn part_1(input: Self::Input) -> String {
+        input.1.values.iter().filter(|x| **x > 1).count().to_string()
+    }
+    
+    fn part_2(input: Self::Input) -> String {
+        // check patches
+        for p in input.0 {
+            if input.1.check_patch(&p) {
+                return p.id.to_string();
+            }
+        }
+
+        panic!("No non-overlapping patch found")
+    }
 }
 
-struct BoundingBox{
+#[parse(r"#{} @ {},{}: {}x{}")]
+#[derive(Debug, Clone)]
+pub struct Patch {
+    id: usize,
+    left: usize,
+    top: usize,
+    width: usize,
+    heigth: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct BoundingBox {
     top: usize,
     left: usize,
     bottom: usize,
@@ -44,7 +56,7 @@ impl BoundingBox {
         }
     }
 
-    fn update(&mut self, p : &Patch){
+    fn update(&mut self, p: &Patch){
         self.top = min(self.top, p.top as usize);
         self.left = min(self.left, p.left as usize);
         self.right = max(self.right, (p.left + p.width - 1) as usize);
@@ -60,7 +72,8 @@ impl BoundingBox {
     }
 }
 
-struct Grid {
+#[derive(Debug, Clone)]
+pub struct Grid {
     values: Vec<i32>,
     bb: BoundingBox,
     width: usize,
@@ -114,16 +127,6 @@ fn gen_grid(patches: &[Patch]) -> Grid {
     grid
 }
 
-#[parse(r"#{} @ {},{}: {}x{}")]
-#[derive(Debug)]
-struct Patch {
-    id: usize,
-    left: usize,
-    top: usize,
-    width: usize,
-    heigth: usize,
-}
-
 
 #[cfg(test)]
 mod tests {
@@ -131,11 +134,11 @@ mod tests {
 
     #[test]
     fn test_part_1() {
-        assert_eq!(part_1("#1 @ 1,3: 4x4\n#2 @ 3,1: 4x4\n#3 @ 5,5: 2x2"), 4);
+        Day::test_part_1("#1 @ 1,3: 4x4\n#2 @ 3,1: 4x4\n#3 @ 5,5: 2x2", 4);
     }
 
     #[test]
     fn test_part_2() {
-        assert_eq!(part_2("#1 @ 1,3: 4x4\n#2 @ 3,1: 4x4\n#3 @ 5,5: 2x2"), 3);
+        Day::test_part_2("#1 @ 1,3: 4x4\n#2 @ 3,1: 4x4\n#3 @ 5,5: 2x2", 3);
     }
 }

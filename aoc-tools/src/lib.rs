@@ -13,6 +13,9 @@ pub mod prelude {
     //pub use crate::{MyFromStr, MyParse};
     pub use crate::Challenge;
     pub use crate::RunChallenge;
+    pub use regex::Regex;
+    pub use lazy_static::lazy_static;
+    pub use chrono::prelude::*;
 }
 
 pub mod __imp {
@@ -28,6 +31,22 @@ pub trait Challenge {
     fn part_1(input: Self::Input) -> String;
     
     fn part_2(input: Self::Input) -> String;
+
+    fn part_1_str(input: String) -> String {
+        Self::part_1(Self::parse(input))
+    }
+
+    fn part_2_str(input: String) -> String {
+        Self::part_2(Self::parse(input))
+    }
+
+    fn test_part_1<T: std::fmt::Display>(input: &str, exp: T) {
+        assert_eq!(Self::part_1_str(input.to_string()), exp.to_string());
+    } 
+
+    fn test_part_2<T: std::fmt::Display>(input: &str, exp: T) {
+        assert_eq!(Self::part_2_str(input.to_string()), exp.to_string());
+    } 
 }
 
 pub trait RunChallenge {
