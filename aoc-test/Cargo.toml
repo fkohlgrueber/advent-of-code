@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 aoc-solutions = { path = "../aoc-solutions" }
+serde_json = "1.0"

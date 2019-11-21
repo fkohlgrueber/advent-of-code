@@ -7,7 +7,7 @@ impl Challenge for Day {
     type Input = Vec<char>;
 
     fn parse(input: String) -> Self::Input {
-        input.chars().collect()
+        input.trim().chars().collect()
     }
 
     fn part_1(input: Self::Input) -> String {
