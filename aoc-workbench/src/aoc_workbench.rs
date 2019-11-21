@@ -1,6 +1,5 @@
 #[allow(unused_imports)]
 use aoc_tools::prelude::*;
-use crate::Challenge;
 
 pub struct Day();
 

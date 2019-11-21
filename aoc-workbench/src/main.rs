@@ -2,15 +2,6 @@
 mod aoc_workbench;
 //mod test;
 
-
-pub trait Challenge<T> {
-    fn parse(input: String) -> T;
-
-    fn part_1(input: T) -> String;
-    
-    fn part_2(input: T) -> String;
-}
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let s = std::fs::read_to_string("input.txt")?;
     let data = aoc_workbench::Day::parse(s);

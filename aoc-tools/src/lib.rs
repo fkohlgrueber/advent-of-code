@@ -11,11 +11,35 @@ pub mod prelude {
     pub use aoc_tools_macros::{parse, parse_multiple};
     pub use std::str::FromStr;
     //pub use crate::{MyFromStr, MyParse};
+    pub use crate::Challenge;
+    pub use crate::RunChallenge;
 }
 
 pub mod __imp {
     pub use lazy_static::lazy_static;
     pub use regex::Regex;
+}
+
+pub trait Challenge {
+    type Input: Clone; 
+
+    fn parse(input: String) -> Self::Input;
+
+    fn part_1(input: Self::Input) -> String;
+    
+    fn part_2(input: Self::Input) -> String;
+}
+
+pub trait RunChallenge {
+    fn run(&self, input: String) -> (String, String);
+}
+
+impl<T> RunChallenge for T 
+where T: Challenge {
+    fn run(&self, input: String) -> (String, String) {
+        let parsed = T::parse(input);
+        (T::part_1(parsed.clone()), T::part_2(parsed))
+    }
 }
 
 /*
