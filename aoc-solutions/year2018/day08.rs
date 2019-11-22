@@ -7,7 +7,7 @@ impl Challenge for Day {
     type Input = Node;
 
     fn parse(input: String) -> Self::Input {
-        parse_node(&mut input.split(' ').map(|x| x.parse().unwrap()))
+        parse_node(&mut input.trim().split(' ').map(|x| x.parse().unwrap()))
     }
 
     fn part_1(input: Self::Input) -> String {
