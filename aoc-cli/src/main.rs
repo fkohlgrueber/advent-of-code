@@ -35,7 +35,13 @@ fn main() -> Result<()> {
 
 
 fn start() -> Result<()> {
-    let (year, day) = get_challenge_desc()?;
+    let (year, day) = get_challenge_desc().unwrap_or_else(|_| {
+        let today = chrono::offset::Local::today();
+        let year = today.format("%Y").to_string().parse::<usize>().unwrap();
+        let day = today.format("%d").to_string().parse::<usize>().unwrap();
+        std::fs::write("challenge.txt", &format!("{},{}", year, day)).unwrap();
+        (year, day)
+    });
     println!("Requesting input for year {}, day {}...", year, day);
     let input = request_input(year, day)?;
     let lines_min_max = input.lines().fold((usize::max_value(), 0), |s, e| {
@@ -192,5 +198,15 @@ fn finish() -> Result<()> {
     // copy input file
     let input_txt = std::fs::read_to_string("input.txt")?;
     std::fs::write(&format!("../inputs/year{}/input{:02}.txt", year, day), &input_txt)?;
+
+    // delete input, result and challenge files
+    std::fs::remove_file("input.txt")?;
+    std::fs::remove_file("result1.txt")?;
+    std::fs::remove_file("result2.txt")?;
+    std::fs::remove_file("challenge.txt")?;
+
+    // reset aoc_workbench to initial state
+    std::process::Command::new("git").args(&["checkout", "--", "src/aoc_workbench.rs"]).output()?;
+
     Ok(())
 }
