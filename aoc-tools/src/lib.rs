@@ -116,13 +116,12 @@ impl AocResults {
         None
     }
 
-    pub fn from_file(s: &str) -> Result<Self, Box<dyn std::error::Error>> {
-        Ok(ron::de::from_str(&std::fs::read_to_string(s)?)?)
+    pub fn from_file(s: &str) -> Self {
+        ron::de::from_str(&std::fs::read_to_string(s).unwrap()).unwrap()
     }
 
-    pub fn write_to_file(&self, s: &str) -> Result<(), Box<dyn std::error::Error>> {
-        std::fs::write(s, ron::ser::to_string_pretty(self, ron::ser::PrettyConfig::default())?)?;
-        Ok(())
+    pub fn write_to_file(&self, s: &str) {
+        std::fs::write(s, ron::ser::to_string_pretty(self, ron::ser::PrettyConfig::default()).unwrap()).unwrap();
     }
 
     pub fn insert(&mut self, year: usize, day: usize, res: (String, String)) {

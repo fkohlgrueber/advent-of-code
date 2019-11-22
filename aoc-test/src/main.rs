@@ -2,7 +2,7 @@ use aoc_tools::AocResults;
 
 fn main() {
     
-    let outputs = AocResults::from_file("../outputs.ron").unwrap();
+    let outputs = AocResults::from_file("../outputs.ron");
     
     let mut years = aoc_solutions::YEARS.iter().collect::<Vec<_>>();
     years.sort_by_key(|x| x.0);

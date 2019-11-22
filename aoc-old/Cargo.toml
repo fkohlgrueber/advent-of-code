@@ -1,5 +1,5 @@
 [package]
-name = "advent-of-code-2018"
+name = "aoc-old"
 version = "0.1.0"
 authors = ["Felix Kohlgrüber <felix.kohlgrueber@gmail.com>"]
 edition = "2018"
@@ -11,4 +11,4 @@ chrono = "0.4.6"
 lazy_static = "1.2.0"
 rayon = "1.0.3"
 itertools = "0.8.0"
-aoc-tools = { path="aoc-tools" }
+aoc-tools = { path="../aoc-tools" }

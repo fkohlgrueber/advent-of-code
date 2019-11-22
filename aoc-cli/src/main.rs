@@ -1,6 +1,6 @@
 use clap::{Arg, App, SubCommand};
 use reqwest::header::COOKIE;
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Result, anyhow};
 use colored::*;
 
 fn main() -> Result<()> {
@@ -181,9 +181,9 @@ fn finish() -> Result<()> {
     let res_part_2 = std::fs::read_to_string("result2.txt")?;
 
     // append results to result db
-    let mut res_db = AocResults::from_file("../outputs.ron")?;
+    let mut res_db = aoc_tools::AocResults::from_file("../outputs.ron");
     res_db.insert(year, day, (res_part_1, res_part_2));
-    res_db.write_to_file("../outputs.ron")?;
+    res_db.write_to_file("../outputs.ron");
 
     // copy source code
     let solution_txt = std::fs::read_to_string("src/aoc_workbench.rs")?;
@@ -192,4 +192,5 @@ fn finish() -> Result<()> {
     // copy input file
     let input_txt = std::fs::read_to_string("input.txt")?;
     std::fs::write(&format!("../inputs/year{}/input{:02}.txt", year, day), &input_txt)?;
+    Ok(())
 }
