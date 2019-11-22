@@ -16,14 +16,17 @@ fn main() -> Result<()> {
                 .possible_values(&["1", "2"]))
             .arg(Arg::with_name("RESULT"))
         )
+        .subcommand(SubCommand::with_name("finish")
+            .about("puts local solution into appropriate places"))
         .get_matches();
         
     match matches.subcommand() {
-        ("start", Some(sub_m)) => start(),
+        ("start", Some(_sub_m)) => start(),
         ("submit", Some(sub_m)) => submit(
             sub_m.value_of("PART").unwrap() == "2",
             sub_m.value_of("RESULT")
         ),
+        ("finish", Some(_sub_m)) => finish(),
         _ => {
             Err(anyhow!("Invalid subcommand..."))
         }, 
@@ -168,4 +171,25 @@ enum WrongAnswer {
     TooLow,
     TooHigh,
     Else
+}
+
+fn finish() -> Result<()> {
+    let (year, day) = get_challenge_desc()?;
+
+    // get results
+    let res_part_1 = std::fs::read_to_string("result1.txt")?;
+    let res_part_2 = std::fs::read_to_string("result2.txt")?;
+
+    // append results to result db
+    let mut res_db = AocResults::from_file("../outputs.ron")?;
+    res_db.insert(year, day, (res_part_1, res_part_2));
+    res_db.write_to_file("../outputs.ron")?;
+
+    // copy source code
+    let solution_txt = std::fs::read_to_string("src/aoc_workbench.rs")?;
+    std::fs::write(&format!("../aoc-solutions/year{}/day{:02}.rs", year, day), &solution_txt)?;
+
+    // copy input file
+    let input_txt = std::fs::read_to_string("input.txt")?;
+    std::fs::write(&format!("../inputs/year{}/input{:02}.txt", year, day), &input_txt)?;
 }

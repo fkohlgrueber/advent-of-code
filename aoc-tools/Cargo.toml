@@ -9,3 +9,5 @@ aoc-tools-macros = { path = "aoc-tools-macros" }
 lazy_static = "1.0"
 regex = "1.0"
 chrono = "0.4.9"
+ron = "0.5"
+serde = { version = "1.0", features=["derive"] }

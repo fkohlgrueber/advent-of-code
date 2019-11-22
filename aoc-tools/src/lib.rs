@@ -101,3 +101,31 @@ impl MyStrDerive for i32 {}
 impl MyStrDerive for char {}
 impl MyStrDerive for String {}
 */
+
+use serde::{Serialize, Deserialize};
+use std::collections::BTreeMap;
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AocResults(BTreeMap<usize, BTreeMap<usize, (String, String)>>);
+
+impl AocResults {
+    pub fn get(&self, year: usize, day: usize) -> Option<&(String, String)> {
+        if let Some(y) = self.0.get(&year) {
+            return y.get(&day);
+        }
+        None
+    }
+
+    pub fn from_file(s: &str) -> Result<Self, Box<dyn std::error::Error>> {
+        Ok(ron::de::from_str(&std::fs::read_to_string(s)?)?)
+    }
+
+    pub fn write_to_file(&self, s: &str) -> Result<(), Box<dyn std::error::Error>> {
+        std::fs::write(s, ron::ser::to_string_pretty(self, ron::ser::PrettyConfig::default())?)?;
+        Ok(())
+    }
+
+    pub fn insert(&mut self, year: usize, day: usize, res: (String, String)) {
+        self.0.entry(year).or_default().insert(day, res);
+    }
+}

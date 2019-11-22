@@ -9,22 +9,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aoc-solutions"
-version = "0.1.0"
-dependencies = [
- "aoc-tools 0.1.0",
- "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "aoc-test"
-version = "0.1.0"
-dependencies = [
- "aoc-solutions 0.1.0",
- "aoc-tools 0.1.0",
-]
-
-[[package]]
 name = "aoc-tools"
 version = "0.1.0"
 dependencies = [

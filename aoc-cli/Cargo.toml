@@ -9,7 +9,7 @@ name = "aoc"
 path = "src/main.rs"
 
 [dependencies]
-#aoc-tools = { path = "../aoc-tools" }
+aoc-tools = { path = "../aoc-tools" }
 reqwest = "0.9"
 select = "0.4.3"
 clap = "2.0"
