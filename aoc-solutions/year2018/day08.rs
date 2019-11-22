@@ -1,36 +1,33 @@
-
 #[allow(unused_imports)]
 use aoc_tools::prelude::*;
 
-pub fn calc(input: &str) -> (String, String) {
-    (part_1(input).to_string(), part_2(input).to_string())
-}
+pub struct Day();
 
-fn part_1(input: &str) -> i32 {
-    let mut num_iter = input.split(' ').map(|x| x.parse::<i32>().unwrap());
+impl Challenge for Day {
+    type Input = Node;
+
+    fn parse(input: String) -> Self::Input {
+        parse_node(&mut input.split(' ').map(|x| x.parse().unwrap()))
+    }
+
+    fn part_1(input: Self::Input) -> String {
+        input.sum_metadata().to_string()
+    }
     
-    let root = parse_node(&mut num_iter);
-
-    root.sum_metadata()
+    fn part_2(input: Self::Input) -> String {
+        input.calc_value().to_string()
+    }
 }
 
-fn part_2(input: &str) -> i32 {
-    let mut num_iter = input.split(' ').map(|x| x.parse::<i32>().unwrap());
-    
-    let root = parse_node(&mut num_iter);
 
-    root.calc_value()
-}
-
-#[derive(Debug)]
-struct Node {
+#[derive(Debug, Clone)]
+pub struct Node {
     children: Vec<Node>,
     metadata: Vec<i32>,
 }
 
 impl Node {
-    fn sum_metadata(&self) -> i32
-    {
+    fn sum_metadata(&self) -> i32 {
         self.metadata.iter().sum::<i32>() + self.children.iter().map(|x| x.sum_metadata()).sum::<i32>()
     }
 
@@ -75,23 +72,18 @@ where
     }
 }
 
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_part_1() {
-        assert_eq!(
-            part_1("2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2"), 
-            138,
-        );
+        Day::test_part_1("2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2", 138);
     }
 
     #[test]
     fn test_part_2() {
-        assert_eq!(
-            part_2("2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2"), 
-            66
-        );
+        Day::test_part_2("2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2", 66);
     }
 }

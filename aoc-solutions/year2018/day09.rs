@@ -1,22 +1,26 @@
-
 #[allow(unused_imports)]
 use aoc_tools::prelude::*;
 
+pub struct Day();
 
-pub fn calc(input: &str) -> (String, String) {
-    (part_1(input).to_string(), part_2(input).to_string())
-}
+impl Challenge for Day {
+    type Input = String;
 
-fn part_1(input: &str) -> usize {
-    let mut game = MarbleGame::from_str(input, 1);
-    game.calc();
-    *game.player_scores.iter().max().unwrap()
-}
+    fn parse(input: String) -> Self::Input {
+        input
+    }
 
-fn part_2(input: &str) -> usize {
-    let mut game = MarbleGame::from_str(input, 100);
-    game.calc();
-    *game.player_scores.iter().max().unwrap()
+    fn part_1(input: Self::Input) -> String {
+        let mut game = MarbleGame::from_str(&input, 1);
+        game.calc();
+        game.player_scores.iter().max().unwrap().to_string()
+    }
+    
+    fn part_2(input: Self::Input) -> String {
+        let mut game = MarbleGame::from_str(&input, 100);
+        game.calc();
+        game.player_scores.iter().max().unwrap().to_string()
+    }
 }
 
 struct Marble {
@@ -121,11 +125,11 @@ mod tests {
     #[test]
     #[allow(clippy::unreadable_literal)]
     fn test_part_1() {
-        assert_eq!(part_1("9 players; last marble is worth 25 points"), 32);
-        assert_eq!(part_1("10 players; last marble is worth 1618 points"), 8317);
-        assert_eq!(part_1("13 players; last marble is worth 7999 points"), 146373);
-        assert_eq!(part_1("17 players; last marble is worth 1104 points"), 2764);
-        assert_eq!(part_1("21 players; last marble is worth 6111 points"), 54718);
-        assert_eq!(part_1("30 players; last marble is worth 5807 points"), 37305);
+        Day::test_part_1("9 players; last marble is worth 25 points", 32);
+        Day::test_part_1("10 players; last marble is worth 1618 points", 8317);
+        Day::test_part_1("13 players; last marble is worth 7999 points", 146373);
+        Day::test_part_1("17 players; last marble is worth 1104 points", 2764);
+        Day::test_part_1("21 players; last marble is worth 6111 points", 54718);
+        Day::test_part_1("30 players; last marble is worth 5807 points", 37305);
     }
 }
