@@ -10,11 +10,11 @@ impl Challenge for Day {
         input
     }
 
-    fn part_1(_input: Self::Input) -> String {
+    fn part_1(input: Self::Input) -> String {
         "".to_string()
     }
     
-    fn part_2(_input: Self::Input) -> String {
+    fn part_2(input: Self::Input) -> String {
         "".to_string()
     }
 }
@@ -23,7 +23,6 @@ impl Challenge for Day {
 mod tests {
     use super::*;
 
-    #[ignore]
     #[test]
     fn test_part_1() {
         Day::test_part_1("", 0);
