@@ -82,6 +82,7 @@ impl Challenge for Day {
 mod tests {
     use super::*;
 
+    #[ignore]
     #[test]
     fn test_part_1() {
         Day::test_part_1("", 0);

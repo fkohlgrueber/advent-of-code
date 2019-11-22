@@ -6,7 +6,6 @@ use structopt::StructOpt;
 mod day7;
 mod day8;
 mod day9;
-mod day10;
 mod day11;
 mod day12;
 mod day13;
@@ -25,7 +24,6 @@ fn get_func(day_number: i32) -> Result<CalcFunction, String> {
         7 => Ok(day7::calc),
         8 => Ok(day8::calc),
         9 => Ok(day9::calc),
-        10 => Ok(day10::calc),
         11 => Ok(day11::calc),
         12 => Ok(day12::calc),
         13 => Ok(day13::calc),
