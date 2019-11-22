@@ -124,7 +124,7 @@ impl SubmitResult {
         } else if s.contains("That's not the right answer") {
             let wa = if s.contains("your answer is too low") {
                 WrongAnswer::TooLow
-            } else if s.contains("your answer is too low") {
+            } else if s.contains("your answer is too high") {
                 WrongAnswer::TooHigh
             } else {
                 WrongAnswer::Else
