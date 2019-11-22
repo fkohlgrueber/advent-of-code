@@ -3,6 +3,7 @@ mod aoc_workbench;
 //mod test;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    use aoc_tools::Challenge;
     let s = std::fs::read_to_string("input.txt")?;
     let data = aoc_workbench::Day::parse(s);
     /*
